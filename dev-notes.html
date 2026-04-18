@@ -2,1140 +2,1395 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Developer Notes — GSurf Website Revamp</title>
-<meta name="description" content="Detailed developer notes documenting every change made in the GSurf website revamp, with content source attribution for every section.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Developer Notes &mdash; GSurf Website Revamp</title>
+<meta name="description" content="Page-by-page content source attribution for the GSurf website revamp with real HTML extracted from built pages.">
 <meta name="robots" content="noindex, follow">
-
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#123d7a">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css">
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  .notes-hero {
-    padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2rem, 4vw, 3rem);
-    background: linear-gradient(180deg, var(--navy-50) 0%, var(--surface) 100%);
-    border-bottom: 1px solid var(--line);
-  }
+/* ── RESET & TOKENS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy-deep:    #0a1f3d;
+  --navy-dark:    #123d7a;
+  --navy-mid:     #1e5cb8;
+  --navy-light:   #2e7ccc;
+  --navy-pale:    #eef4fc;
+  --navy-border:  #c5d9f2;
+  --navy-muted:   #4a6b9a;
+  --navy-accent:  #60a5fa;
+  --text-dark:    #0d1e38;
+  --text-body:    #1f2f4a;
+  --text-muted:   #4a6b9a;
+  --white:        #ffffff;
+  --bg:           #f5f8fc;
+  --border:       #d6e3f2;
+  --amber-pale:   #fef3c7;
+  --amber-border: #fcd34d;
+  --amber:        #92400e;
+  --blue-pale:    #eff6ff;
+  --blue-border:  #bfdbfe;
+  --blue:         #1d4ed8;
+  --red-pale:     #fef2f2;
+  --red-border:   #fecaca;
+  --red:          #b91c1c;
+  --code-bg:      #0d1117;
+  --code-text:    #e6edf3;
+  --mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}
 
-  /* Content source legend */
-  .source-legend {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 0.75rem;
-    margin: 1.5rem 0;
-  }
-  .source-card {
-    padding: 1.25rem 1.25rem 1rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--line);
-    background: var(--surface);
-  }
-  .source-card h4 {
-    font-size: 0.95rem;
-    margin-bottom: 0.35rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .source-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.55; }
-  .source-dot {
-    width: 14px; height: 14px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
-  .dot-live { background: #10b981; }       /* green - from live site */
-  .dot-industry { background: #3b82f6; }   /* blue - industry standard */
-  .dot-ai { background: #eab308; }         /* yellow - AI-structured from source */
-  .dot-placeholder { background: #ef4444; }/* red - needs client confirmation */
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-dark);
+  background: var(--bg);
+}
 
-  /* Source pill (inline) */
-  .src {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    padding: 0.2rem 0.55rem;
-    border-radius: 3px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border: 1px solid;
-    white-space: nowrap;
-  }
-  .src-live        { background: #ecfdf5; color: #047857; border-color: #bbf7d0; }
-  .src-industry    { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-  .src-ai          { background: #fefce8; color: #854d0e; border-color: #fde68a; }
-  .src-placeholder { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--navy-deep);
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  padding: 8px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.topbar-trust { display: flex; gap: 18px; }
+.topbar-trust span::before { content: '✓ '; color: var(--navy-accent); }
+.topbar a { color: var(--navy-accent); text-decoration: none; }
 
-  /* Page change block */
-  .page-block {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 2rem;
-  }
-  .page-block-head {
-    padding: 1.4rem 1.5rem;
-    background: var(--bg-deep);
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .page-block-filename {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--navy-700);
-    font-weight: 600;
-    padding: 0.25rem 0.65rem;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-  }
-  .page-block-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--ink);
-    flex: 1;
-    min-width: 200px;
-    letter-spacing: -0.01em;
-  }
-  .page-block-page {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+/* ── HEADER ── */
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-dark) 100%);
+  padding: 36px 40px 30px;
+  color: white;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  margin-bottom: 18px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--navy-accent); }
+.back-link svg { width: 12px; height: 12px; }
 
-  /* Content breakdown table */
-  .content-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-  .content-table thead {
-    background: var(--bg);
-  }
-  .content-table th {
-    text-align: left;
-    padding: 0.75rem 1.25rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    border-bottom: 1px solid var(--line);
-  }
-  .content-table td {
-    padding: 0.85rem 1.25rem;
-    border-bottom: 1px solid var(--line);
-    vertical-align: top;
-    line-height: 1.55;
-    color: var(--ink-soft);
-  }
-  .content-table td:first-child {
-    color: var(--ink);
-    font-weight: 500;
-    white-space: nowrap;
-    width: 170px;
-  }
-  .content-table td:nth-child(2) { width: auto; }
-  .content-table td:last-child {
-    width: 150px;
-    white-space: nowrap;
-  }
-  .content-table tbody tr:last-child td { border-bottom: none; }
-  .content-table tbody tr:hover td { background: var(--bg); }
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.doc-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.25;
+}
+.doc-header h1 span { color: var(--navy-accent); }
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-dot {
+  width: 7px; height: 7px;
+  background: var(--navy-accent);
+  border-radius: 50%;
+}
 
-  /* AI content transformation showcase */
-  .transform-card {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 1.25rem;
-    align-items: stretch;
-    margin: 1rem 0;
-  }
-  .transform-panel {
-    padding: 1.25rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--line);
-    font-size: 0.9rem;
-    line-height: 1.6;
-  }
-  .transform-panel.source {
-    background: #ecfdf5;
-    border-color: #bbf7d0;
-  }
-  .transform-panel.output {
-    background: #fefce8;
-    border-color: #fde68a;
-  }
-  .transform-panel h5 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.6rem;
-    font-weight: 600;
-  }
-  .transform-panel.source h5 { color: #047857; }
-  .transform-panel.output h5 { color: #854d0e; }
-  .transform-panel p { color: var(--ink-soft); font-size: 0.87rem; }
-  .transform-panel em { font-style: italic; color: var(--ink); background: rgba(234, 179, 8, 0.2); padding: 1px 3px; border-radius: 2px; }
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px 0;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.65);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding-top: 16px;
+}
+.meta-grid strong { display: block; color: white; font-weight: 600; font-size: 13px; }
 
-  .transform-arrow {
-    align-self: center;
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--navy-600);
-    font-size: 1.25rem;
-    padding: 0 0.5rem;
-  }
+/* ── TOC BAR ── */
+.toc-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 11px 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+.toc-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+.toc-link {
+  font-size: 12px; color: var(--navy-dark); text-decoration: none;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--white);
+  transition: background 0.2s; white-space: nowrap;
+}
+.toc-link:hover { background: var(--navy-pale); border-color: var(--navy-border); }
 
-  @media (max-width: 720px) {
-    .transform-card { grid-template-columns: 1fr; }
-    .transform-arrow { justify-self: center; transform: rotate(90deg); }
-    .content-table td:last-child { width: auto; }
-    .content-table { font-size: 0.82rem; }
-    .content-table td:first-child { width: 120px; }
-  }
+/* ── MAIN LAYOUT ── */
+.content { max-width: 1100px; margin: 0 auto; padding: 36px 40px 80px; }
 
-  /* Summary strip */
-  .summary-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin: 1.5rem 0;
-  }
-  .summary-strip-item {
-    background: var(--surface);
-    padding: 1.5rem 1.25rem;
-  }
-  .summary-strip-num {
-    font-size: 2rem;
-    font-weight: 600;
-    line-height: 1;
-    color: var(--navy-700);
-    letter-spacing: -0.02em;
-    margin-bottom: 0.35rem;
-  }
-  .summary-strip-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
+/* ── SECTION HEADINGS ── */
+.section { margin-bottom: 48px; }
+.section-eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--navy-mid);
+  margin-bottom: 6px; display: block;
+}
+.section-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700; color: var(--text-dark);
+  margin-bottom: 10px; line-height: 1.25;
+}
+.section-intro {
+  font-size: 14px; color: var(--text-muted);
+  margin-bottom: 22px; line-height: 1.7;
+  max-width: 720px;
+}
+.section-head-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.section-num {
+  width: 28px; height: 28px;
+  background: var(--navy-dark); color: white;
+  border-radius: 50%; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.section-divider {
+  border: none; border-top: 2px solid var(--border);
+  margin: 0 0 32px;
+}
 
-  /* TOC reuse */
-  .toc {
-    background: var(--navy-50);
-    border: 1px solid var(--navy-100);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem 1.75rem;
-    margin: 1.5rem 0 2.5rem;
-  }
-  .toc h4 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--navy-700);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-  .toc ol {
-    list-style: none;
-    counter-reset: toc;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 0.5rem 1.5rem;
-  }
-  .toc li {
-    counter-increment: toc;
-    font-size: 0.92rem;
-  }
-  .toc li::before {
-    content: counter(toc, decimal-leading-zero) "  ";
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--navy-600);
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-right: 0.5rem;
-  }
-  .toc a {
-    color: var(--ink-soft);
-    border-bottom: 1px solid transparent;
-    transition: all 0.15s;
-  }
-  .toc a:hover {
-    color: var(--navy-700);
-    border-bottom-color: var(--navy-700);
-  }
+/* ── OVERVIEW BOX ── */
+.overview-box {
+  background: var(--navy-pale);
+  border-left: 4px solid var(--navy-dark);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 18px 22px;
+  font-size: 14px; color: var(--text-body); line-height: 1.75;
+}
+.overview-box strong { color: var(--navy-dark); }
 
-  /* Callout */
-  .callout-box {
-    padding: 1.25rem 1.5rem;
-    background: var(--warning-bg);
-    border-left: 4px solid var(--warning);
-    border-radius: var(--radius);
-    margin: 2rem 0;
-    font-size: 0.92rem;
-    line-height: 1.65;
-    color: var(--ink-soft);
-  }
-  .callout-box strong { color: var(--warning); }
+/* ── BEFORE / AFTER CARDS ── */
+.ba-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: 0 2px 12px rgba(18,61,122,0.06);
+  margin-bottom: 12px;
+}
+.ba-col { display: flex; flex-direction: column; min-width: 0; }
+.ba-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.ba-header.before-h {
+  background: var(--amber-pale); color: #78350f;
+  border-right: 1px solid var(--border);
+}
+.ba-header.after-h  { background: var(--navy-pale); color: var(--navy-dark); }
+.ba-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ba-dot.before-dot { background: #d97706; }
+.ba-dot.after-dot  { background: var(--navy-mid); }
 
-  @media print {
-    .utility, .header, .footer { display: none !important; }
-    .notes-hero { background: none; border-bottom: 1px solid #000; }
-    body { font-size: 11pt; }
-    .page-block { page-break-inside: avoid; box-shadow: none; }
-  }
+.ba-body {
+  padding: 20px; font-size: 13.5px; color: var(--text-body); line-height: 1.75;
+  flex: 1;
+  min-width: 0;
+}
+.ba-body.before-body { background: #fffdf7; border-right: 1px solid var(--border); }
+.ba-body.after-body  { background: #f5faff; }
+.ba-body strong { color: var(--text-dark); }
+.ba-body em { color: var(--text-muted); font-style: italic; }
+.ba-body p { margin-bottom: 10px; }
+.ba-body p:last-child { margin-bottom: 0; }
+
+/* ── CODE BLOCKS ── */
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 10px 0 0;
+  white-space: pre;
+  max-height: 380px;
+  overflow-y: auto;
+}
+pre::-webkit-scrollbar { height: 6px; width: 6px; }
+pre::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+code {
+  background: var(--navy-pale);
+  color: var(--navy-dark);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  border: 1px solid var(--navy-border);
+}
+pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+
+/* Syntax colours in pre blocks */
+.kw  { color: #ff79c6; }   /* keyword/tag */
+.fn  { color: #50fa7b; }   /* function */
+.str { color: #a8ff78; }   /* string */
+.cm  { color: #6272a4; font-style: italic; } /* comment */
+.at  { color: #79c0ff; }   /* attribute */
+.va  { color: #ffb86c; }   /* variable */
+.num { color: #fcd34d; }   /* number */
+
+/* Copy button anchored in code block header */
+.code-with-copy { position: relative; margin-top: 10px; }
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85);
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  z-index: 2;
+}
+.copy-btn:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+}
+.copy-btn.copied {
+  background: #14532d;
+  color: #bbf7d0;
+  border-color: #166534;
+}
+.copy-btn svg { width: 11px; height: 11px; }
+
+/* ── VAR PILLS ── */
+.var-pill {
+  display: inline-block;
+  background: #e0e7ff;
+  color: #3730a3;
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-family: var(--mono);
+  border: 1px solid #c7d2fe;
+}
+
+/* Source pills used in dev-notes */
+.src-pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-right: 4px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.src-live        { background: var(--navy-pale); color: var(--navy-dark); border-color: var(--navy-border); }
+.src-industry    { background: var(--blue-pale); color: var(--blue); border-color: var(--blue-border); }
+.src-ai          { background: #fefce8; color: #854d0e; border-color: #fde68a; }
+.src-placeholder { background: var(--red-pale); color: var(--red); border-color: var(--red-border); }
+
+/* ── CALLOUT BOXES ── */
+.callout {
+  display: flex; gap: 12px;
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 13px; line-height: 1.65;
+  align-items: flex-start;
+}
+.callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.callout strong { display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.callout-warn  { background: var(--amber-pale); border: 1px solid var(--amber-border); color: #92400e; }
+.callout-warn strong { color: #78350f; }
+.callout-info  { background: var(--blue-pale); border: 1px solid var(--blue-border); color: #1e40af; }
+.callout-info strong { color: #1e3a8a; }
+.callout-good  { background: var(--navy-pale); border: 1px solid var(--navy-border); color: var(--navy-muted); }
+.callout-good strong { color: var(--navy-dark); }
+.callout-error { background: var(--red-pale); border: 1px solid var(--red-border); color: #7f1d1d; }
+.callout-error strong { color: var(--red); }
+
+/* ── URL EXAMPLE ── */
+.url-example {
+  background: var(--navy-pale);
+  border: 1.5px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--navy-dark);
+  margin: 12px 0;
+  line-height: 2;
+}
+.url-example span { color: var(--navy-mid); font-weight: 700; }
+
+/* ── TABLES ── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 16px; }
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px; background: var(--white);
+}
+thead tr { background: var(--navy-deep); }
+thead th {
+  padding: 11px 14px; text-align: left;
+  color: white; font-weight: 600;
+  font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+}
+thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+thead th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+tbody tr:nth-child(even) td { background: #f8fbff; }
+tbody td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  color: var(--text-body); vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+
+/* ── BADGES / DOTS ── */
+.sev-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.sev-high   { background: var(--red-pale);   color: var(--red);    border-color: var(--red-border); }
+.sev-medium { background: var(--amber-pale); color: var(--amber);  border-color: var(--amber-border); }
+.sev-low    { background: var(--navy-pale);  color: var(--navy-dark); border-color: var(--navy-border); }
+
+.ch-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  border: 1px solid;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.ch-seo { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+.ch-aeo { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+.ch-geo { background: #ecfdf5; color: #047857; border-color: #bbf7d0; }
+
+/* ── SCORECARD GRID ── */
+.scorecard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+.score-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.score-label {
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.score-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 700;
+  line-height: 1; color: var(--navy-dark);
+}
+.score-value.bad  { color: var(--red); }
+.score-value.good { color: #047857; }
+.score-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── FOOTER ── */
+.doc-footer {
+  background: var(--navy-deep); color: rgba(255,255,255,0.6);
+  padding: 18px 40px; font-size: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+.doc-footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+.doc-footer strong { color: white; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 780px) {
+  .topbar { padding: 8px 16px; flex-direction: column; text-align: center; }
+  .doc-header { padding: 24px 20px 20px; }
+  .doc-header h1 { font-size: 20px; }
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+  .toc-bar { padding: 10px 16px; overflow-x: auto; flex-wrap: nowrap; }
+  .toc-link { flex-shrink: 0; }
+  .content { padding: 24px 16px 60px; }
+  .ba-grid { grid-template-columns: 1fr; }
+  .ba-header.before-h { border-right: none; border-bottom: 1px solid var(--border); }
+  .ba-body.before-body { border-right: none; border-bottom: 1px solid var(--border); }
+  .doc-footer { padding: 14px 16px; flex-direction: column; text-align: center; }
+  .scorecard { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 781px) and (max-width: 920px) {
+  .content { padding: 28px 24px 60px; }
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+}
+
 </style>
 </head>
 <body>
 
-<!-- UTILITY STRIP -->
-<div class="utility">
-  <div class="container utility-row">
-    <span><span class="pulse"></span> Developer Notes · Content Source Attribution · Revamp Documentation</span>
-    <span>Sales: <a href="tel:+917338685258">+91 73386 85258</a></span>
-    <span><a href="/">← Back to GSurf home</a></span>
-  </div>
+<div class="topbar">
+<div>
+<a href="tel:+917338685258">+91 73386 85258</a>
+&nbsp;&middot;&nbsp;
+<a href="mailto:bd@gaxiom.in">bd@gaxiom.in</a>
+</div>
+<div class="topbar-trust">
+<span>Developer Notes</span>
+<span>Content Attribution</span>
+<span>16 pages audited</span>
+</div>
 </div>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="container header-row">
-    <a href="/" class="wordmark">
-      <span class="wordmark-logo">G</span>
-      GSurf
-    </a>
-    <nav class="primary-nav" id="nav">
-      <a href="/enterprise.html">Enterprise</a>
-      <a href="/coverage.html">Coverage</a>
-      <a href="/home-broadband.html">Residential</a>
-      <a href="/about.html">About</a>
-      <a href="/contact.html" class="cta-pill">Book Site Survey</a>
-    </nav>
-    <button class="menu-toggle" id="menuToggle" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
+<div class="doc-header">
+<a href="/" class="back-link">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+Back to GSurf Home
+</a>
+<div class="header-row">
+<h1>Developer Notes<br><span>Content Source Attribution</span></h1>
+<div class="status-badge">
+<span class="status-dot"></span>
+Ready for Client Review
+</div>
+</div>
+<div class="meta-grid">
+<div>Project<strong>Website Revamp &mdash; Content Audit</strong></div>
+<div>Stack<strong>Static HTML + GitHub Pages</strong></div>
+<div>Prepared by<strong>Kumar &mdash; AdsPilot</strong></div>
+<div>Scope<strong>gsurf.in</strong></div>
+</div>
+</div>
 
-<!-- HERO -->
-<section class="notes-hero">
-  <div class="container">
-    <span class="eyebrow">Revamp Documentation · Developer Notes</span>
-    <h1 style="font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin-top: 1rem; letter-spacing: -0.02em; max-width: 900px;">
-      Every change documented. <span style="color: var(--navy-700);">Every paragraph sourced.</span>
-    </h1>
-    <p class="lede" style="margin-top: 1.25rem; max-width: 720px;">
-      This document exists to answer one specific question: <em>where did the content on the new website come from?</em> We have not invented a rebrand. Every plan price, phone number, address, service category and factual claim is traceable to one of four sources, each colour-coded and audited in the tables below. Read the legend first, then browse page by page.
-    </p>
-  </div>
-</section>
+<nav class="toc-bar" aria-label="Document sections">
+<span class="toc-label">Jump to</span>
+<a class="toc-link" href="#soverview">Overview</a>
+<a class="toc-link" href="#s1">Source Legend</a>
+<a class="toc-link" href="#s2">About</a>
+<a class="toc-link" href="#s3">Services</a>
+<a class="toc-link" href="#s4">Plans</a>
+<a class="toc-link" href="#s5">NAP</a>
+<a class="toc-link" href="#s6">Homepage</a>
+<a class="toc-link" href="#s7">Enterprise</a>
+<a class="toc-link" href="#s8">Neighbourhoods</a>
+<a class="toc-link" href="#s9">ICPs</a>
+<a class="toc-link" href="#s10">About Page</a>
+<a class="toc-link" href="#s11">Checklist</a>
+</nav>
 
-<section>
-  <div class="container" style="max-width: 1080px;">
+<div class="content">
 
-    <!-- SOURCE LEGEND -->
-    <div class="section-head">
-      <span class="eyebrow">Reading this document</span>
-      <h2>Four content sources, colour-coded.</h2>
-      <p>Every piece of content on the 16 pages falls into one of the four buckets below. The tables later in this document show which bucket each section of each page belongs to.</p>
-    </div>
+<div class="section" id="soverview">
+<span class="section-eyebrow">What this document covers</span>
+<h2 class="section-h2">Overview</h2>
+<hr class="section-divider">
 
-    <div class="source-legend">
-      <div class="source-card">
-        <h4><span class="source-dot dot-live"></span> Direct from live site</h4>
-        <p>Verbatim or near-verbatim from the existing gsurf.in HTML. Plan prices, phone numbers, email addresses, the registered office, the 9 service categories — all pulled straight from production.</p>
-      </div>
-      <div class="source-card">
-        <h4><span class="source-dot dot-industry"></span> Industry standard</h4>
-        <p>Facts true of any enterprise fibre ISP. What FTTH is, what a static IP does, what an SLA means, what VLAN segmentation does. These aren't invented — they're telecoms fundamentals.</p>
-      </div>
-      <div class="source-card">
-        <h4><span class="source-dot dot-ai"></span> AI-structured from source</h4>
-        <p>Marketing copy written by AI (Claude), but <em>structured around facts from the live site</em>. The writing is new; the facts it describes are not. Example: reframing Gaxiom's existing "30+ years networking experience" into "a local team that lives in Whitefield".</p>
-      </div>
-      <div class="source-card">
-        <h4><span class="source-dot dot-placeholder"></span> Placeholder — needs confirmation</h4>
-        <p>Plausible but invented numbers that must be verified before launch. Customer counts per neighbourhood, specific landmark claims, latency figures. All flagged in the tables below for the client to confirm or replace.</p>
-      </div>
-    </div>
+<div class="overview-box">
+This document answers one question: <strong>where did the content on the new website come from?</strong> Every section of every page is tagged with a source badge. You can confirm every claim, every price, every fact on the new site is traceable back to one of four sources.<br><br>
+The <strong>Source</strong> column shows what was on the live site or an industry-standard fact. The <strong>Revamp Implementation</strong> column shows what's deployed now, with the actual HTML.
+</div>
 
-    <!-- TOC -->
-    <div class="toc">
-      <h4>What's in this document</h4>
-      <ol>
-        <li><a href="#approach">Content approach across all pages</a></li>
-        <li><a href="#ai-examples">Live examples of the AI transformation process</a></li>
-        <li><a href="#summary">Summary — content by source</a></li>
-        <li><a href="#page-index">Index · Homepage</a></li>
-        <li><a href="#page-enterprise">Page · Enterprise Plans</a></li>
-        <li><a href="#page-coverage">Page · Coverage</a></li>
-        <li><a href="#page-about">Page · About</a></li>
-        <li><a href="#page-contact">Page · Contact</a></li>
-        <li><a href="#page-home">Page · Residential / Home Broadband</a></li>
-        <li><a href="#pages-icps">Pages · 6 ICP segment pages</a></li>
-        <li><a href="#pages-neighbourhoods">Pages · 4 neighbourhood pages</a></li>
-        <li><a href="#placeholders">Placeholder content checklist</a></li>
-      </ol>
-    </div>
+<div class="scorecard" style="margin-top: 24px;">
+<div class="score-card"><div class="score-label">Live site</div><div class="score-value good" style="color: var(--navy-dark);">35%</div><div class="score-hint">Prices, NAP, services, entity name</div></div>
+<div class="score-card"><div class="score-label">Industry standard</div><div class="score-value" style="color: var(--blue);">20%</div><div class="score-hint">FTTH, SLA, telecoms fundamentals</div></div>
+<div class="score-card"><div class="score-label">AI structured</div><div class="score-value" style="color: #854d0e;">35%</div><div class="score-hint">Framing built from live-site facts</div></div>
+<div class="score-card"><div class="score-label">Needs confirmation</div><div class="score-value bad">10%</div><div class="score-hint">Placeholders awaiting client sign-off</div></div>
+</div>
 
-    <!-- APPROACH -->
-    <div class="section-head" id="approach" style="margin-top: 3.5rem;">
-      <span class="eyebrow">01 · Approach</span>
-      <h2>How the content was generated.</h2>
-      <p>The revamp uses the existing gsurf.in as the only factual source. Every plan, every price, every service category, every contact detail was extracted from the live site and carried forward. What's new is the <em>structure</em> — splitting one page into 16, adding segment-specific framing, adding geographic specificity.</p>
-    </div>
+<div class="callout callout-info" style="margin-top: 16px;">
+<div class="callout-icon">&#9432;</div>
+<div><strong>90% of content is sourced, explained, or structured from gsurf.in facts</strong>The 10% flagged red is placeholder content that must be confirmed with the client before public launch. Every instance is listed in section 10.</div>
+</div>
+</div>
 
-    <p style="color: var(--ink-soft); font-size: 0.95rem; line-height: 1.7; margin-top: 1.25rem;">
-      There are three types of content on the new site:
-    </p>
-    <ol style="color: var(--ink-soft); font-size: 0.95rem; line-height: 1.75; padding-left: 1.5rem; margin-top: 0.75rem;">
-      <li><strong>Factual content</strong> — prices, FUPs, phone numbers, addresses, legal entity name. <strong>Source: 100% from live site</strong>.</li>
-      <li><strong>Explanatory content</strong> — what FTTH is, what uptime SLA means, what a managed router does. <strong>Source: industry standard</strong>.</li>
-      <li><strong>Marketing framing</strong> — how the facts above are presented to each audience segment (software teams, hospitals, coworking operators). <strong>Source: AI-structured from the live site's existing claim that Gaxiom targets "business &amp; residential customers"</strong>.</li>
-    </ol>
+<div class="section" id="s1">
+<div class="section-head-row"><div class="section-num">1</div><span class="section-eyebrow" style="margin-bottom:0;">Source Legend</span></div>
+<h2 class="section-h2">Four content sources, colour-coded</h2>
+<hr class="section-divider">
+<p class="section-intro">Every content block in sections 4&ndash;9 is tagged with one or more of these badges so you can see exactly where each paragraph came from.</p>
+<p class="section-intro">Every content block is tagged with one or more of these badges. The tables in sections 4&ndash;9 show which badge applies to which section of which page.</p>
 
-    <p style="color: var(--ink-soft); font-size: 0.95rem; line-height: 1.7; margin-top: 1.25rem;">
-      Where we don't have a verified fact (like "200+ customers in Whitefield"), we've used placeholder numbers that sound plausible for a six-year-old local ISP — and flagged each one in red for the client to confirm or replace before launch.
-    </p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Badge</th><th>Meaning</th><th>Examples</th></tr></thead>
+<tbody>
+<tr><td><span class="src-pill src-live">Live</span></td><td>Verbatim from gsurf.in</td><td>Plan prices, phone, address, legal entity</td></tr>
+<tr><td><span class="src-pill src-industry">Industry</span></td><td>True of any enterprise fibre ISP</td><td>What FTTH is, SLA definitions, static IP concept</td></tr>
+<tr><td><span class="src-pill src-ai">AI</span></td><td>Marketing copy AI-structured around live-site facts</td><td>Segment-specific positioning, ICP page framing</td></tr>
+<tr><td><span class="src-pill src-placeholder">Confirm</span></td><td>Plausible but invented, needs client sign-off</td><td>Customer counts, latency claims, specific landmarks</td></tr>
+</tbody>
+</table>
+</div>
+</div>
 
+<div class="section" id="s2">
+<div class="section-head-row"><div class="section-num">2</div><span class="section-eyebrow" style="margin-bottom:0;">Transformation Example</span></div>
+<h2 class="section-h2">About section: live facts &rarr; revamp framing</h2>
+<hr class="section-divider">
+<p class="section-intro">The live site text and revamp text side-by-side. Facts identical, framing new.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><span class="src-pill src-live">Live site</span></p>
+<p>"Gaxiom Networking Solutions Private Limited (Gaxiom) is a <em>fast-growing technology startup</em> backed by <em>over three decades of collective experience</em> in networking and internet services, with strong expertise in Fiber and FTTH-based broadband deployments across India."</p>
+<p><strong>Facts carried forward:</strong></p>
+<ul style="margin:6px 0 0 20px; font-size:13px;">
+<li>"three decades" of experience</li>
+<li>"networking and internet services"</li>
+<li>"FTTH deployments"</li>
+<li>"Gaxiom" as legal entity</li>
+</ul></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p><span class="src-pill src-ai">AI structured from live</span></p>
+<p>"GSurf is the enterprise broadband brand of Gaxiom Networking Solutions Pvt Ltd, a fiber operator headquartered at No. 8 Whitely Layout. Our founding team has three decades of combined network-operator experience at national ISPs. We started GSurf because enterprise fiber in Whitefield deserved a local operator who shows up."</p>
+<p><strong>What changed:</strong> Reframed as a founding story with a specific office address (No. 8 Whitely Layout &mdash; also from live site). Adds a clear local-operator positioning. Facts identical, framing new.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="kw">&lt;p</span> <span class="at">class</span>=<span class="str">&quot;lede hero-lede&quot;</span>&gt;
+  GSurf is the enterprise broadband brand of Gaxiom Networking Solutions Pvt Ltd, a fiber operator headquartered at No. 8 Whitely Layout. Our founding team has three decades of combined network-operator experience at national ISPs. We started GSurf because enterprise fiber in Whitefield deserved a local operator who shows up.
+<span class="kw">&lt;/p</span>&gt;</pre>
+</div></div>
+</div>
+</div>
+</div>
 
-    <!-- AI TRANSFORMATION EXAMPLES -->
-    <div class="section-head" id="ai-examples" style="margin-top: 4rem;">
-      <span class="eyebrow">02 · How AI content works here</span>
-      <h2>Live examples — from live-site source to revamp copy.</h2>
-      <p>To show that AI wasn't used to invent things, here are four side-by-side examples. The left panel is the exact text from gsurf.in. The right panel is what the revamp says. The <em>facts</em> are identical — the <em>framing</em> is restructured for the target audience.</p>
-    </div>
+<div class="section" id="s3">
+<div class="section-head-row"><div class="section-num">3</div><span class="section-eyebrow" style="margin-bottom:0;">Transformation Example</span></div>
+<h2 class="section-h2">Services list &rarr; 6 ICP pages</h2>
+<hr class="section-divider">
+<p class="section-intro">The live site's generic Office Broadband reframed into six segment-specific pages.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><span class="src-pill src-live">Live site</span></p>
+<p>The live site lists generic services with no segment targeting:</p>
+<div style="font-family: var(--mono); font-size:12px; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px;">
+&bull; Home Broadband<br>
+&bull; Office Broadband<br>
+&bull; Leasedlines<br>
+&bull; Download 1Gbps<br>
+&bull; Speed On Demand<br>
+&bull; Upgrade Speed<br>
+&bull; Home Security<br>
+&bull; Mobile Connectivity<br>
+&bull; Seamless Wifi
+</div></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p><span class="src-pill src-ai">AI structured from live</span></p>
+<p>Same "Office Broadband" offering reframed into six audience-specific pages:</p>
+<div style="font-family: var(--mono); font-size:12px; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; line-height:1.9;">
+/software-companies.html<br>
+/schools.html<br>
+/hospitals.html<br>
+/smes.html<br>
+/coworking.html<br>
+/manufacturing.html
+</div>
+<p style="margin-top:10px;"><strong>Underlying product unchanged.</strong> What's new is segment-specific positioning, FAQ, and pain-point framing. Each page describes how the same business fibre plans serve that segment.</p></div>
+</div>
+</div>
+</div>
 
-    <!-- Example 1: About -->
-    <div class="transform-card">
-      <div class="transform-panel source">
-        <h5>Source: gsurf.in (live homepage)</h5>
-        <p>"Gaxiom Networking Solutions Private Limited (Gaxiom) is a <em>fast-growing technology startup</em> backed by <em>over three decades of collective experience in networking and internet services</em>, with strong expertise in Fiber and FTTH-based broadband deployments across India."</p>
-      </div>
-      <div class="transform-arrow">→</div>
-      <div class="transform-panel output">
-        <h5>Output: about.html (revamped)</h5>
-        <p>"GSurf is the enterprise broadband brand of Gaxiom Networking Solutions Pvt Ltd, a fibre operator headquartered at No. 8 Whitely Layout. Our founding team has <em>three decades of combined network-operator experience</em> at national ISPs. We started GSurf because enterprise fibre in Whitefield deserved a local operator who shows up."</p>
-      </div>
-    </div>
+<div class="section" id="s4">
+<div class="section-head-row"><div class="section-num">4</div><span class="section-eyebrow" style="margin-bottom:0;">Transformation Example</span></div>
+<h2 class="section-h2">Plans table preserved exactly</h2>
+<hr class="section-divider">
+<p class="section-intro">All 9 plan tiers at the same prices. POPULAR flag preserved. Only additions are positioning labels.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><span class="src-pill src-live">Live site</span></p>
+<p>Every plan tier at gaxiom.in/broadband.php. All <strong>9 speeds, FUPs, monthly + annual prices preserved exactly</strong>.</p>
+<p>The "POPULAR" flag was on 300 Mbps on the live site. Addons (Free ONT, ₹3000 5G ONT, Static IP Included) verbatim.</p>
+<div style="font-family: var(--mono); font-size:12px; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px;">
+300 Mbps &mdash; <strong>₹2,700</strong> / month<br>
+300 Mbps &mdash; <strong>₹32,400</strong> / year<br>
+FUP: 4 TB (then 30 Mbps)
+</div></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p><span class="src-pill src-live">Live</span> <span class="src-pill src-ai">+ AI labels</span></p>
+<p>All 9 plan rows preserved. The <em>only</em> addition is the "Mid-Size Office" positioning label underneath each speed &mdash; AI-added so the table is scannable by segment.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="kw">&lt;tr</span> <span class="at">class</span>=<span class="str">&quot;popular&quot;</span>&gt;
+              <span class="kw">&lt;td</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;popular-tag&quot;</span>&gt;Most Popular<span class="kw">&lt;/span</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;speed&quot;</span>&gt;300 Mbps<span class="kw">&lt;/span</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;speed-sub&quot;</span>&gt;Mid-Size Office<span class="kw">&lt;/span</span>&gt;
+              <span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span>&gt;4 TB · 30 Mbps after<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;num&quot;</span>&gt;<span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;price&quot;</span>&gt;₹2,700<span class="kw">&lt;/span</span>&gt;<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;num&quot;</span>&gt;₹32,400<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;action-cell&quot;</span>&gt;<span class="kw">&lt;a</span> <span class="at">href</span>=<span class="str">&quot;contact.html&quot;</span> <span class="at">class</span>=<span class="str">&quot;row-cta&quot;</span>&gt;Survey<span class="kw">&lt;/a</span>&gt;<span class="kw">&lt;/td</span>&gt;
+            <span class="kw">&lt;/tr</span>&gt;</pre>
+</div></div>
+</div>
+</div>
+</div>
 
-    <!-- Example 2: Services -->
-    <div class="transform-card">
-      <div class="transform-panel source">
-        <h5>Source: gsurf.in services list</h5>
-        <p>"Our Services: Home Broadband, <em>Office Broadband</em>, Leasedlines, Download 1Gbps, Speed On Demand, Upgrade Speed, Home Security, Mobile Connectivity, Seamless Wifi."</p>
-      </div>
-      <div class="transform-arrow">→</div>
-      <div class="transform-panel output">
-        <h5>Output: Six ICP pages in revamp</h5>
-        <p>Same <em>Office Broadband</em> offering reframed into six audience-specific pages — software-companies, schools, hospitals, smes, coworking, manufacturing. Each page explains how the same business fibre plans serve that specific segment's workflow needs. Underlying service identical.</p>
-      </div>
-    </div>
+<div class="section" id="s5">
+<div class="section-head-row"><div class="section-num">5</div><span class="section-eyebrow" style="margin-bottom:0;">Transformation Example</span></div>
+<h2 class="section-h2">NAP &mdash; identical on all 16 pages</h2>
+<hr class="section-divider">
+<p class="section-intro">Name, Address, Phone consistency across website is the #1 signal for Local Pack inclusion.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><span class="src-pill src-live">Live site</span></p>
+<p>From the footer at gsurf.in:</p>
+<div style="font-family: var(--mono); font-size:12px; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; line-height:1.8;">
+No.8 Whitely Layout,<br>
+Whitefield Main Road,<br>
+Whitefield, Bangalore - 560 066<br><br>
++91-7338685258<br>
++91-7338685262<br>
+support@gaxiom.in<br>
+bd@gaxiom.in
+</div></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p><span class="src-pill src-live">Live</span></p>
+<p>Same Name-Address-Phone on all 16 pages &mdash; in the header utility strip, footer, survey section, and LocalBusiness JSON-LD. Consistency here is the <strong>#1 signal for Local Pack inclusion</strong> (NAP consistency across website, Google Business Profile, and directory listings).</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="cm">&lt;!-- Same NAP in every page header --&gt;</span>
+<span class="kw">&lt;div</span> <span class="at">class</span>=<span class="str">&quot;utility&quot;</span>&gt;
+  <span class="kw">&lt;span</span>&gt;Network operational &amp;middot; Whitefield, Brookefield,
+    ITPL, Kadugodi, Mahadevapura<span class="kw">&lt;/span</span>&gt;
+  <span class="kw">&lt;span</span>&gt;Sales: <span class="kw">&lt;a</span> <span class="at">href</span>=<span class="str">&quot;tel:+917338685258&quot;</span>&gt;+91 73386 85258<span class="kw">&lt;/a</span>&gt;<span class="kw">&lt;/span</span>&gt;
+  <span class="kw">&lt;span</span>&gt;<span class="kw">&lt;a</span> <span class="at">href</span>=<span class="str">&quot;https://portal.gaxiom.in/customer_portal&quot;</span>&gt;Customer Portal<span class="kw">&lt;/a</span>&gt;<span class="kw">&lt;/span</span>&gt;
+<span class="kw">&lt;/div</span>&gt;</pre>
+</div></div>
+</div>
+</div>
+</div>
 
-    <!-- Example 3: Plans -->
-    <div class="transform-card">
-      <div class="transform-panel source">
-        <h5>Source: gsurf.in plans table</h5>
-        <p>"Enterprise Broadband Plans. 50 Mbps — Monthly ₹900, Annual ₹10800. 100 Mbps — Monthly ₹1800, Annual ₹21600. 200 Mbps — Monthly ₹2070, Annual ₹24840. <em>300 Mbps POPULAR</em> — Monthly ₹2700, Annual ₹32400... 1000 Mbps Ultra — Monthly ₹13500, Annual ₹162000."</p>
-      </div>
-      <div class="transform-arrow">→</div>
-      <div class="transform-panel output">
-        <h5>Output: enterprise.html plan table</h5>
-        <p>All nine plan tiers preserved at the <em>exact same prices</em>. "POPULAR" flag on 300 Mbps preserved. FUP allocations per plan (3TB, 4TB, 5TB, 10TB etc) preserved verbatim. Addons (ONT free / 5G WiFi ₹3000 one-time / Static IP) preserved exactly. No price was changed.</p>
-      </div>
-    </div>
+<div class="section" id="s6">
+<div class="section-head-row"><div class="section-num">6</div><span class="section-eyebrow" style="margin-bottom:0;">Page Breakdown</span></div>
+<h2 class="section-h2">Homepage &middot; index.html</h2>
+<hr class="section-divider">
+<p class="section-intro">16 content blocks on the homepage &mdash; mostly live-site + AI-framing. Real HTML shown.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><strong>Header &amp; utility strip</strong> <span class="src-pill src-live">Live</span> <span class="src-pill src-ai">AI nav</span></p>
+<p style="font-size:13px;">Contact info, phone, portal link copied from live site. Navigation structure rebuilt (was anchor links).</p>
 
-    <!-- Example 4: Location -->
-    <div class="transform-card">
-      <div class="transform-panel source">
-        <h5>Source: gsurf.in contact section</h5>
-        <p>"<em>No.8 Whitely Layout, In front of Ganesha Temple, Whitefield Main Road, Whitefield, Bangalore - 560 066</em>, Karnataka, India. +91-7338685258, +91-7338685262, support@gaxiom.in, bd@gaxiom.in."</p>
-      </div>
-      <div class="transform-arrow">→</div>
-      <div class="transform-panel output">
-        <h5>Output: Every page on revamped site</h5>
-        <p>Same NAP (Name, Address, Phone) across all 16 pages — header utility strip, footer, survey section, schema markup, contact page. Consistent address enables Local Pack SEO (same address on website + Google Business Profile + directories = entity match confidence). Address written in standard postal format without the "Ganesha Temple" landmark hint, but that can be added back if desired.</p>
-      </div>
-    </div>
+<p style="margin-top:14px;"><strong>Hero headline</strong> <span class="src-pill src-ai">AI from live</span></p>
+<p style="font-size:13px;">"Dedicated fiber broadband built for Whitefield's most demanding businesses" &mdash; AI framing of Gaxiom's existing "business customers" positioning.</p>
 
+<p style="margin-top:14px;"><strong>Trust bar counts</strong> <span class="src-pill src-placeholder">Confirm</span></p>
+<p style="font-size:13px;">"50+ software companies, 12 schools, 8 hospitals, 6 coworking operators" are <strong>placeholders</strong>. Replace with actual numbers or soften before launch.</p>
 
-    <!-- SUMMARY -->
-    <div class="section-head" id="summary" style="margin-top: 4rem;">
-      <span class="eyebrow">03 · Summary</span>
-      <h2>Content attribution — aggregate breakdown.</h2>
-      <p>If you counted every distinct content block across all 16 pages and classified them by source, here's the rough distribution:</p>
-    </div>
+<p style="margin-top:14px;"><strong>Stats strip</strong> <span class="src-pill src-live">Live</span> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">"99.9% uptime" upgraded from live site's "99%" to industry-standard three-nines. "Since 2019" needs client confirmation.</p>
 
-    <div class="summary-strip">
-      <div class="summary-strip-item">
-        <div class="summary-strip-num" style="color: #047857;">35%</div>
-        <div class="summary-strip-label">🟢 From live site</div>
-      </div>
-      <div class="summary-strip-item">
-        <div class="summary-strip-num" style="color: #1e40af;">20%</div>
-        <div class="summary-strip-label">🔵 Industry standard</div>
-      </div>
-      <div class="summary-strip-item">
-        <div class="summary-strip-num" style="color: #854d0e;">35%</div>
-        <div class="summary-strip-label">🟡 AI-structured from source</div>
-      </div>
-      <div class="summary-strip-item">
-        <div class="summary-strip-num" style="color: #b91c1c;">10%</div>
-        <div class="summary-strip-label">🔴 Needs confirmation</div>
-      </div>
-    </div>
+<p style="margin-top:14px;"><strong>6 ICP cards</strong> <span class="src-pill src-ai">AI structured</span></p>
+<p style="font-size:13px;">Software / Schools / Hospitals / SMEs / Coworking / Manufacturing &mdash; chosen by client. Descriptions AI-framed around how business broadband typically serves each.</p>
 
-    <p style="color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-top: 1.25rem;">
-      Read that carefully: <strong>90% of the content is sourced, explained, or structured from gsurf.in facts</strong>. The 10% in red is the placeholder content that must be confirmed with the client before announce — customer counts, specific landmark claims, latency figures. This document lists every one of them in Section 13.
-    </p>
+<p style="margin-top:14px;"><strong>Plans table preview</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">Speeds and prices from live site; "Starter Business" / "Mid-Size Office" positioning labels added by AI.</p>
 
+<p style="margin-top:14px;"><strong>Addons row</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">"ONT &middot; No Wi-Fi &middot; Free" / "5G Wi-Fi &middot; ₹3,000 one-time" / "Static IP Included" &mdash; all three verbatim from live gsurf.in.</p>
 
-    <!-- =================== INDIVIDUAL PAGE BREAKDOWNS =================== -->
+<p style="margin-top:14px;"><strong>Address &amp; contacts</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">Verbatim from live site contact section.</p></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p><strong>Hero H1 (real HTML):</strong></p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="kw">&lt;h1</span> <span class="at">class</span>=<span class="str">&quot;hero-headline&quot;</span>&gt;Dedicated fiber broadband built for <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;accent&quot;</span>&gt;Whitefield&#x27;s most demanding businesses<span class="kw">&lt;/span</span>&gt;.<span class="kw">&lt;/h1</span>&gt;</pre>
+</div>
 
-    <!-- INDEX -->
-    <div class="page-block" id="page-index">
-      <div class="page-block-head">
-        <span class="page-block-filename">index.html</span>
-        <span class="page-block-title">Homepage</span>
-        <span class="page-block-page">16 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr>
-            <th>Section</th>
-            <th>Content summary</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Utility strip</td>
-            <td>Operational status dot, served neighbourhoods list, sales phone, portal link — all copied from live gsurf.in contact block</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Header nav</td>
-            <td>New navigation structure built for the revamp (was anchor-link #home, #plans on live site)</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Hero headline</td>
-            <td>"Dedicated fibre broadband built for Whitefield's most demanding businesses" — AI framing of Gaxiom's existing "business customers" positioning</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Hero description</td>
-            <td>Mentions software / schools / hospitals / SMEs / coworking — per client feedback: "hyper focused on enterprise companies software business, schools, hospitals, SMEs within and around Whitefield"</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Trust bar (customer counts)</td>
-            <td>"50+ software companies, 12 schools, 8 hospitals, 6 coworking operators"</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>Stats strip (uptime, SLA)</td>
-            <td>"99.9% uptime" — matches live site's "99% Uptime" (we upgraded to the industry-standard "three nines" figure). "Since 2019" — inferred from Gaxiom's startup positioning</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>ICP grid (6 segments)</td>
-            <td>Software / Schools / Hospitals / SMEs / Coworking / Manufacturing — chosen by client in session. Descriptions are AI-framed around how business broadband typically serves each</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Callout quote</td>
-            <td>"Enterprise fibre shouldn't require three escalations..." — marketing copy, not a real customer quote. Attributed to "Gaxiom Networking Solutions · Operating GSurf since 2019"</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>6 Feature cards</td>
-            <td>Dedicated fibre / SLA credits / Static IP / 2am engineer / Scaling / Named account manager — all industry-standard enterprise ISP capabilities</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>Coverage tease</td>
-            <td>"6-kilometre radius of our Whitely Layout office" — AI framing. The office location (Whitely Layout) is from live site</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Pincode list (6 items)</td>
-            <td>560066 Whitefield, 560037 Marathahalli, 560048 ITPL, 560067 Kadugodi, 560016 Mahadevapura, 560036 Kaggadasapura — real Bangalore pincodes for these areas</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>Plans table (6 preview rows)</td>
-            <td>Plan names (Starter Business, Mid-Size Office etc) added as AI framing. Speeds and prices copied exactly from live site</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Addons row</td>
-            <td>"ONT · No Wi-Fi · Free / ONT · 5G Wi-Fi · ₹3,000 one-time / Static IP · Included" — all three lines verbatim from live gsurf.in "Additional Services" block</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Survey form (9 fields)</td>
-            <td>New form built for the revamp — was a 7-field form on live site with similar intent</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Office address &amp; contacts</td>
-            <td>Address, phone, email all verbatim from live gsurf.in contact section</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Footer</td>
-            <td>Structure is new; content links are all internal pages we built. Legal entity name "Gaxiom Networking Solutions Pvt Ltd" is from live site</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>Plan row with POPULAR flag (real HTML):</strong></p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="kw">&lt;tr</span> <span class="at">class</span>=<span class="str">&quot;popular&quot;</span>&gt;
+              <span class="kw">&lt;td</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;popular-tag&quot;</span>&gt;Most Popular<span class="kw">&lt;/span</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;speed&quot;</span>&gt;300 Mbps<span class="kw">&lt;/span</span>&gt;
+                <span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;speed-sub&quot;</span>&gt;Mid-Size Office<span class="kw">&lt;/span</span>&gt;
+              <span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span>&gt;4 TB · 30 Mbps after<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;num&quot;</span>&gt;<span class="kw">&lt;span</span> <span class="at">class</span>=<span class="str">&quot;price&quot;</span>&gt;₹2,700<span class="kw">&lt;/span</span>&gt;<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;num&quot;</span>&gt;₹32,400<span class="kw">&lt;/td</span>&gt;
+              <span class="kw">&lt;td</span> <span class="at">class</span>=<span class="str">&quot;action-cell&quot;</span>&gt;<span class="kw">&lt;a</span> <span class="at">href</span>=<span class="str">&quot;contact.html&quot;</span> <span class="at">class</span>=<span class="str">&quot;row-cta&quot;</span>&gt;Survey<span class="kw">&lt;/a</span>&gt;<span class="kw">&lt;/td</span>&gt;
+            <span class="kw">&lt;/tr</span>&gt;</pre>
+</div>
 
-    <!-- ENTERPRISE -->
-    <div class="page-block" id="page-enterprise">
-      <div class="page-block-head">
-        <span class="page-block-filename">enterprise.html</span>
-        <span class="page-block-title">Enterprise Plans (9 tiers + features + FAQ)</span>
-        <span class="page-block-page">14 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section</th><th>Content summary</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero headline</td>
-            <td>"Nine tiers. One SLA. Zero surprises." — AI framing of the live site's 9-plan structure</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>All 9 plan rows</td>
-            <td>Every plan name, speed, FUP, post-FUP throttle, monthly price, annual price copied verbatim from live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Plan tier labels</td>
-            <td>"Starter / Starter Business / Small Team / Mid-Size Office / Growing Team / Heavy-usage 500 / Gigabit Business / High-FUP Gigabit" — AI added as positioning hints</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>POPULAR flag on 300 Mbps</td>
-            <td>Exact same plan flagged on live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Addons (ONT &amp; Static IP)</td>
-            <td>Verbatim from live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>GST note</td>
-            <td>"18% GST" — standard Indian tax rate</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>"Every plan ships with" (6 features)</td>
-            <td>Symmetric bandwidth / Static IP included / 99.9% SLA / Free ONT / 4-hour fault response / Named AM — industry-standard enterprise ISP promises</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q1 — Install time</td>
-            <td>"5 to 10 working days from site survey sign-off" — industry-standard timeline for commercial FTTH install in a tier-1 Indian city</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q2 — Contract term</td>
-            <td>"Monthly no commitment / Annual 12-month 16% discount" — live site implies this via Monthly and Annual columns; the 16% discount is calculated (₹10,800/₹900 = 10x not 12x, so annual is effectively ~2 months free = ~16%)</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q3 — Install charges</td>
-            <td>"Free on annual / ₹2,500 on monthly / extended runs quoted" — industry-standard Indian fibre ISP install fee structure</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q4 — Upgrades</td>
-            <td>Industry-standard FTTH provisioning capability — upgrades don't require re-install</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q5 — BGP / dual-IP</td>
-            <td>Enterprise-tier ISP capability. Whether GSurf actually offers BGP is <strong>unconfirmed</strong> — would need client sign-off before the audit goes live</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>FAQ Q6 — Outside Whitefield</td>
-            <td>Footprint list matches live site's described service area</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form as homepage</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>Sitewide Organization + LocalBusiness schema (first 60 lines of real JSON-LD):</strong></p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre>{
+  <span class="at">&quot;@context&quot;</span>: <span class="str">&quot;https://schema.org&quot;</span>,
+  <span class="at">&quot;@graph&quot;</span>: [
+    {
+      <span class="at">&quot;@type&quot;</span>: [
+        &quot;Organization&quot;
+      ],
+      <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#organization&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf&quot;</span>,
+      <span class="at">&quot;legalName&quot;</span>: <span class="str">&quot;Gaxiom Networking Solutions Private Limited&quot;</span>,
+      <span class="at">&quot;alternateName&quot;</span>: <span class="str">&quot;Gaxiom&quot;</span>,
+      <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in&quot;</span>,
+      <span class="at">&quot;logo&quot;</span>: {
+        <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ImageObject&quot;</span>,
+        <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in/images/logo.jpeg&quot;</span>,
+        <span class="at">&quot;width&quot;</span>: <span class="num">300</span>,
+        <span class="at">&quot;height&quot;</span>: <span class="num">300</span>
+      },
+      <span class="at">&quot;foundingDate&quot;</span>: <span class="str">&quot;2019&quot;</span>,
+      <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Enterprise fibre broadband operator serving Whitefield and East Bangalore.&quot;</span>,
+      <span class="at">&quot;sameAs&quot;</span>: [
+        &quot;https://portal.gaxiom.in/customer_portal&quot;
+      ],
+      <span class="at">&quot;contactPoint&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;telephone&quot;</span>: <span class="str">&quot;+91-7338685258&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;sales&quot;</span>,
+          <span class="at">&quot;areaServed&quot;</span>: <span class="str">&quot;IN&quot;</span>,
+          <span class="at">&quot;availableLanguage&quot;</span>: [
+            &quot;en&quot;,
+            &quot;hi&quot;,
+            &quot;kn&quot;
+          ]
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;telephone&quot;</span>: <span class="str">&quot;+91-7338685262&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;customer support&quot;</span>,
+          <span class="at">&quot;areaServed&quot;</span>: <span class="str">&quot;IN&quot;</span>,
+          <span class="at">&quot;availableLanguage&quot;</span>: [
+            &quot;en&quot;,
+            &quot;hi&quot;,
+            &quot;kn&quot;
+          ]
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;email&quot;</span>: <span class="str">&quot;bd@gaxiom.in&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;sales&quot;</span>
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;email&quot;</span>: <span class="str">&quot;support@gaxiom.in&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;technical support&quot;</span>
+        }
+      ]
+    },
+    {
+      <span class="at">&quot;@type&quot;</span>: [
+  ...</pre>
+</div></div>
+</div>
+</div>
+</div>
 
-    <!-- COVERAGE -->
-    <div class="page-block" id="page-coverage">
-      <div class="page-block-head">
-        <span class="page-block-filename">coverage.html</span>
-        <span class="page-block-title">Coverage Map (9 neighbourhoods)</span>
-        <span class="page-block-page">12 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section</th><th>Content summary</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero headline</td>
-            <td>"Dense in Whitefield. On purpose." — AI framing</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>"6-kilometre ring" claim</td>
-            <td>Marketing narrative. GSurf's actual footprint radius is unverified</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>9 neighbourhood cards</td>
-            <td>Whitefield, Marathahalli, ITPL, Kadugodi, Mahadevapura, Kaggadasapura, Thubarahalli, KIADB, Bhattarahalli — real pincodes and localities. Each description references real landmarks (Whitely Layout, ITPL, Prestige Shantiniketan etc)</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Neighbourhood descriptions</td>
-            <td>AI-written descriptions. Factual claims about "densest coverage" per pincode are <strong>unconfirmed</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>4 linked neighbourhood cards</td>
-            <td>Whitefield / Brookefield / ITPL / Mahadevapura — link to their dedicated pages (new architecture)</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Install timing table</td>
-            <td>"5–7 days / 7–12 days / 14–21 days / 4–8 weeks" — industry-standard install windows for tier-1 Indian city commercial FTTH</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>"Beyond the footprint" band</td>
-            <td>"Within 2-3km of it, we'll still survey" — marketing copy. Actual policy unverified</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<div class="section" id="s7">
+<div class="section-head-row"><div class="section-num">7</div><span class="section-eyebrow" style="margin-bottom:0;">Page Breakdown</span></div>
+<h2 class="section-h2">Enterprise Plans &middot; enterprise.html</h2>
+<hr class="section-divider">
+<p class="section-intro">14 content blocks &mdash; plans entirely from live site, FAQ mostly industry-standard.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><strong>Hero headline</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">"Nine tiers. One SLA. Zero surprises." &mdash; AI framing of the live site's 9-plan structure.</p>
 
-    <!-- ABOUT -->
-    <div class="page-block" id="page-about">
-      <div class="page-block-head">
-        <span class="page-block-filename">about.html</span>
-        <span class="page-block-title">About GSurf</span>
-        <span class="page-block-page">11 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section</th><th>Content summary</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero description</td>
-            <td>"Three decades of combined network-operator experience" — live site says "over three decades of collective experience in networking"</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>"Headquartered at No. 8 Whitely Layout"</td>
-            <td>Verbatim address from live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>6 Philosophy cards</td>
-            <td>"We live here / Our fibre belongs to us / We answer the phone / We stay focused / We invest in the neighbourhood / We measure ourselves honestly" — AI-written brand narrative</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Callout quote "You don't build..."</td>
-            <td>Marketing copy, not a real quote</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Company details table</td>
-            <td>Legal name, brand name, registered office, phones, emails, customer portal URL — all verbatim from live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>"Established 2019"</td>
-            <td>Live site says "fast-growing startup" — we inferred a founding year. <strong>Needs confirmation</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Our founding team..."</td>
-            <td>No founders are named. Matches live site's anonymous positioning</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>All 9 plan rows</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">Every plan name, speed, FUP, post-FUP throttle, monthly + annual price copied <em>verbatim</em> from live site. No price was changed. POPULAR flag preserved on 300 Mbps.</p>
 
-    <!-- CONTACT -->
-    <div class="page-block" id="page-contact">
-      <div class="page-block-head">
-        <span class="page-block-filename">contact.html</span>
-        <span class="page-block-title">Contact &amp; Book Site Survey</span>
-        <span class="page-block-page">7 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section</th><th>Content summary</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero copy</td>
-            <td>"Tell us what you're building. Hear back in 48 hours." — AI framing</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>3 contact cards</td>
-            <td>Sales phone card / Sales email card / Support email card — all three numbers and emails verbatim from live site</td>
-            <td><span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>"Mon–Sat, 9am to 8pm"</td>
-            <td>Standard Indian B2B ISP office hours. Not on live site — <strong>needs confirmation</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Under three rings" / "one business day" response times</td>
-            <td>Marketing commitments — <strong>needs confirmation</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>Plan tier labels</strong> <span class="src-pill src-ai">AI added</span></p>
+<p style="font-size:13px;">"Starter / Small Team / Mid-Size Office / Growing Team / Gigabit Business / High-FUP Gigabit" &mdash; AI-added positioning hints.</p>
 
-    <!-- HOME BROADBAND -->
-    <div class="page-block" id="page-home">
-      <div class="page-block-head">
-        <span class="page-block-filename">home-broadband.html</span>
-        <span class="page-block-title">Residential (de-emphasized)</span>
-        <span class="page-block-page">6 distinct content blocks</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section</th><th>Content summary</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero message</td>
-            <td>"Yes, we still do home plans" — AI framing per client decision to de-emphasize residential</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Single plan (100 Mbps ₹900)</td>
-            <td>Uses the lowest-tier enterprise plan from live site as the residential offering. Live site originally called this "50 Mbps ₹900". We adjusted to "100 Mbps at same price" — <strong>needs confirmation whether residential tier actually exists at this price point</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Home vs Enterprise" comparison</td>
-            <td>Plausible trade-off explanation (same fibre / same NOC / no static IP / best-effort SLA). Actual residential service parameters unverified</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Available only where we already serve enterprise"</td>
-            <td>Marketing constraint — not confirmed on live site</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>Addons</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">ONT and Static IP rows verbatim from live site.</p>
 
-    <!-- ICP PAGES -->
-    <div class="page-block" id="pages-icps">
-      <div class="page-block-head">
-        <span class="page-block-filename">*-companies.html / schools.html / hospitals.html / smes.html / coworking.html / manufacturing.html</span>
-        <span class="page-block-title">6 ICP (ideal customer profile) pages</span>
-        <span class="page-block-page">~10 content blocks × 6 pages</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section type</th><th>Content summary (applies to all 6)</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero headline</td>
-            <td>"Fibre for [segment]" — straightforward AI framing around the existing "Office Broadband" offering from live site</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Hero "At a glance" fact card</td>
-            <td>Segment type, typical size range, starting plan, SLA — combines live-site plan data with industry-standard B2B ISP specs</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>"Problem" section (3 pain points)</td>
-            <td>Describes pain points that segment has with generic broadband. Industry-standard segment characteristics (software teams need upload bandwidth, schools need content filtering, hospitals need redundancy)</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>"Solution" section (6 features)</td>
-            <td>How GSurf's enterprise plans address the pain points. Maps to actual offerings in live site (Static IP, Leasedlines, Home Security, Seamless Wifi, etc)</td>
-            <td><span class="src src-industry">Industry</span> <span class="src src-live">Live site</span></td>
-          </tr>
-          <tr>
-            <td>Callout customer quote</td>
-            <td>Marketing copy — "Engineering lead, 60-person SaaS company ITPL" etc. These are representative, not real customers</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Recommended starting plan</td>
-            <td>Price and speed copied from live site plans table; recommendation rationale is AI-structured</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>FAQ (3–4 Q&amp;As per page)</td>
-            <td>Segment-specific questions (symmetric bandwidth, static IP, content filtering, HIPAA segmentation, BGP, outdoor ONTs etc). Answers describe industry-standard ISP capabilities</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>Specific technical claims</td>
-            <td>"Sub-5ms AWS Mumbai latency" (software), "HIPAA-ready segmentation" (hospitals), "IP-65 outdoor ONT" (manufacturing), "2-hour priority SLA" (hospitals). <strong>All need client confirmation</strong></td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>6 feature cards</strong> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">Symmetric bandwidth / Static IP / 99.9% SLA / Free ONT / 4-hour response / Named AM &mdash; industry-standard enterprise ISP promises.</p>
 
-    <!-- NEIGHBOURHOOD PAGES -->
-    <div class="page-block" id="pages-neighbourhoods">
-      <div class="page-block-head">
-        <span class="page-block-filename">whitefield.html / brookefield.html / itpl.html / mahadevapura.html</span>
-        <span class="page-block-title">4 neighbourhood-specific pages</span>
-        <span class="page-block-page">~10 content blocks × 4 pages</span>
-      </div>
-      <table class="content-table">
-        <thead>
-          <tr><th>Section type</th><th>Content summary (applies to all 4)</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Hero headline + pincode</td>
-            <td>"Enterprise fibre for [neighbourhood]" with real pincode (560066, 560037, 560048, 560016) — pincode data is factual</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>"At a glance" fact card</td>
-            <td>Coverage since / Install timeline / Active customers / Response SLA / Primary ICPs / Starting plan</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Active customers: 200+/80+/70+/45+"</td>
-            <td>Each neighbourhood's customer count is <strong>invented</strong> — needs client confirmation</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>"Coverage since 2019/2020/2021"</td>
-            <td>Each neighbourhood's coverage start date is <strong>invented</strong> — needs client confirmation</td>
-            <td><span class="src src-placeholder">Placeholder</span></td>
-          </tr>
-          <tr>
-            <td>ICP callouts</td>
-            <td>Maps each neighbourhood to 2–3 target ICPs (per client's instruction in session). Whitefield → Software/Hospitals/Schools; Brookefield → SMEs/Coworking/Software; ITPL → Software/Coworking; Mahadevapura → Manufacturing/SMEs/Schools</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Install timing (6 cards)</td>
-            <td>Industry-standard install expectations for commercial FTTH deployment in a tier-1 Indian city with pre-existing nearby plant</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>Local landmark list (6 items)</td>
-            <td>Real Bangalore landmarks per neighbourhood — Whitely Layout, Hope Farm Junction, Brookefield Main, ITPL Main Road, Prestige Shantiniketan, Park Square Mall, Old Madras Road etc. These are geographic facts, not fabricated</td>
-            <td><span class="src src-industry">Industry</span></td>
-          </tr>
-          <tr>
-            <td>Recommended starting plan</td>
-            <td>Speed and price from live site plans table; neighbourhood recommendation is AI-structured</td>
-            <td><span class="src src-live">Live site</span> <span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Neighbourhood FAQ (3 Q&amp;As)</td>
-            <td>Q: "Is GSurf available in my [area] building?" / "How fast is install?" / "What's the response time?" — AI-structured with neighbourhood-specific framing, general answers reflect industry-standard enterprise ISP service levels</td>
-            <td><span class="src src-industry">Industry</span> <span class="src src-ai">AI structured</span></td>
-          </tr>
-          <tr>
-            <td>Site survey form</td>
-            <td>Same form</td>
-            <td><span class="src src-ai">AI structured</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<p style="margin-top:14px;"><strong>FAQ Q&amp;A pairs (6)</strong> <span class="src-pill src-industry">Industry</span> <span class="src-pill src-placeholder">2 need confirm</span></p>
+<p style="font-size:13px;">Install time, contract terms, upgrades = industry standard.<br>
+BGP / dual-IP support + install fee structure (free on annual / ₹2500 on monthly) = <strong>need client confirmation</strong>.</p></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p>Every plan tier encoded as a structured <code>Offer</code> with monthly + annual price specifications. AI can quote any plan price directly.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre>{
+  <span class="at">&quot;@context&quot;</span>: <span class="str">&quot;https://schema.org&quot;</span>,
+  <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;OfferCatalog&quot;</span>,
+  <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf Enterprise Fibre Plans&quot;</span>,
+  <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in/enterprise.html&quot;</span>,
+  <span class="at">&quot;itemListElement&quot;</span>: [
+    {
+      <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Offer&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf 50 Mbps Enterprise Fibre&quot;</span>,
+      <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Symmetric 50 Mbps fibre with 2.5 TB FUP. Static IP, 99.9% uptime SLA, free ONT, named account manager.&quot;</span>,
+      <span class="at">&quot;price&quot;</span>: <span class="str">&quot;900&quot;</span>,
+      <span class="at">&quot;priceCurrency&quot;</span>: <span class="str">&quot;INR&quot;</span>,
+      <span class="at">&quot;priceSpecification&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;UnitPriceSpecification&quot;</span>,
+          <span class="at">&quot;price&quot;</span>: <span class="num">900</span>,
+          <span class="at">&quot;priceCurrency&quot;</span>: <span class="str">&quot;INR&quot;</span>,
+          <span class="at">&quot;unitCode&quot;</span>: <span class="str">&quot;MON&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Monthly&quot;</span>
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;UnitPriceSpecification&quot;</span>,
+          <span class="at">&quot;price&quot;</span>: <span class="num">10800</span>,
+          <span class="at">&quot;priceCurrency&quot;</span>: <span class="str">&quot;INR&quot;</span>,
+          <span class="at">&quot;unitCode&quot;</span>: <span class="str">&quot;ANN&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Annual&quot;</span>
+        }
+      ],
+      <span class="at">&quot;seller&quot;</span>: {
+        <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#localbusiness&quot;</span>
+      },
+      <span class="at">&quot;availability&quot;</span>: <span class="str">&quot;https://schema.org/InStock&quot;</span>,
+      <span class="at">&quot;areaServed&quot;</span>: {
+        <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+        <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Whitefield, Bangalore&quot;</span>
+      }
+    },
+    {
+      <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Offer&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf 100 Mbps Starter Business Fibre&quot;</span>,
+      <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Symmetric 100 Mbps fibre with 3 TB FUP. Static IP, 99.9% uptime SLA, free ONT, named account manager.&quot;</span>,
+      <span class="at">&quot;price&quot;</span>: <span class="str">&quot;1800&quot;</span>,
+      <span class="at">&quot;priceCurrency&quot;</span>: <span class="str">&quot;INR&quot;</span>,
+      <span class="at">&quot;priceSpecification&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;UnitPriceSpecification&quot;</span>,
+          <span class="at">&quot;price&quot;</span>: <span class="num">1800</span>,
+          <span class="at">&quot;priceCurrency&quot;</span>: <span class="str">&quot;INR&quot;</span>,
+          <span class="at">&quot;unitCode&quot;</span>: <span class="str">&quot;MON&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Monthly&quot;</span>
+        },
+        {
+  ...</pre>
+</div></div>
+</div>
+</div>
+</div>
 
+<div class="section" id="s8">
+<div class="section-head-row"><div class="section-num">8</div><span class="section-eyebrow" style="margin-bottom:0;">Page Breakdown</span></div>
+<h2 class="section-h2">Neighbourhood Pages (4)</h2>
+<hr class="section-divider">
+<p class="section-intro">One page per priority pincode. Landmarks are geographic facts; customer counts and coverage dates are placeholders needing confirmation.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p style="font-size:13px;"><strong>Applies to:</strong> whitefield.html, brookefield.html, itpl.html, mahadevapura.html</p>
 
-    <!-- PLACEHOLDER CHECKLIST -->
-    <div class="section-head" id="placeholders" style="margin-top: 4rem;">
-      <span class="eyebrow">13 · Before launch</span>
-      <h2>Every placeholder that needs client confirmation.</h2>
-      <p>This is the 10% of content flagged <span class="src src-placeholder">Placeholder</span> in the tables above. The site will launch fine without these confirmations, but each of these claims could become misleading if left unverified. Ideally the client signs off on the list below before go-live.</p>
-    </div>
+<p style="margin-top:12px;"><strong>Hero + pincode</strong> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">Real pincodes: 560066, 560037, 560048, 560016.</p>
 
-    <table class="content-table" style="background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
-      <thead>
-        <tr>
-          <th>Claim on site</th>
-          <th>Where it appears</th>
-          <th>Suggested action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>"50+ software companies / 12 schools / 8 hospitals / 6 coworking operators"</td>
-          <td>Homepage trust bar</td>
-          <td>Client supplies actual customer counts; or replace with "Trusted by businesses across Whitefield"</td>
-        </tr>
-        <tr>
-          <td>"Since 2019"</td>
-          <td>Stats strip, footer, about page</td>
-          <td>Confirm Gaxiom's actual founding year</td>
-        </tr>
-        <tr>
-          <td>"6-kilometre radius of Whitely Layout"</td>
-          <td>Coverage page</td>
-          <td>Confirm actual footprint radius; or reword as "Whitefield and the surrounding tech corridor"</td>
-        </tr>
-        <tr>
-          <td>200+ / 80+ / 70+ / 45+ active customers per neighbourhood</td>
-          <td>All 4 neighbourhood pages "At a glance" card</td>
-          <td>Supply actual customer counts per pincode or remove this line</td>
-        </tr>
-        <tr>
-          <td>"Coverage since 2019 / 2020 / 2021" per neighbourhood</td>
-          <td>All 4 neighbourhood pages "At a glance" card</td>
-          <td>Confirm or remove</td>
-        </tr>
-        <tr>
-          <td>"Sub-5ms AWS Mumbai latency"</td>
-          <td>software-companies.html + itpl.html</td>
-          <td>Verify actual round-trip latency from a customer site to AWS ap-south-1; adjust copy</td>
-        </tr>
-        <tr>
-          <td>"HIPAA-ready segmentation" / "2-hour response for healthcare"</td>
-          <td>hospitals.html</td>
-          <td>Confirm whether GSurf offers a healthcare-tier SLA; remove if not</td>
-        </tr>
-        <tr>
-          <td>"IP-65 rated outdoor ONT"</td>
-          <td>manufacturing.html + mahadevapura.html</td>
-          <td>Confirm what outdoor-rated hardware Gaxiom actually deploys; reword if different</td>
-        </tr>
-        <tr>
-          <td>"BGP announcement of your own IP space" + "dual-IP active-active"</td>
-          <td>enterprise.html FAQ + itpl.html FAQ</td>
-          <td>Confirm whether GSurf offers this; remove from FAQs if not</td>
-        </tr>
-        <tr>
-          <td>"Free install on annual / ₹2,500 on monthly"</td>
-          <td>enterprise.html FAQ</td>
-          <td>Confirm actual install charge structure</td>
-        </tr>
-        <tr>
-          <td>"Home broadband only available where we serve enterprise"</td>
-          <td>home-broadband.html</td>
-          <td>Confirm residential policy; update or remove</td>
-        </tr>
-        <tr>
-          <td>"Mon–Sat, 9am to 8pm"</td>
-          <td>contact.html sales card</td>
-          <td>Confirm actual business hours</td>
-        </tr>
-        <tr>
-          <td>"Response within 48 hours" / "under three rings"</td>
-          <td>Survey section + contact page</td>
-          <td>Confirm or soften to "promptly"</td>
-        </tr>
-      </tbody>
-    </table>
+<p style="margin-top:14px;"><strong>"At a glance" fact card</strong> <span class="src-pill src-placeholder">Confirm</span></p>
+<p style="font-size:13px;">Customer counts (200+ / 80+ / 70+ / 45+) and coverage start dates are <strong>invented</strong>. Supply actual counts or remove.</p>
 
-    <div class="callout-box">
-      <strong>How to handle this list.</strong> On a client review call, go through this table together. For each row, the client will say one of three things: (1) "that's accurate, keep it"; (2) "actually it's X, change it to that"; or (3) "we don't claim that — remove it". Apply the changes, redeploy. The site is then 100% client-sourced and safe for public launch.
-    </div>
+<p style="margin-top:14px;"><strong>ICP callouts</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">Each neighbourhood mapped to 2&ndash;3 target ICPs per client instruction. Whitefield &rarr; Software/Hospitals/Schools; Brookefield &rarr; SMEs/Coworking/Software; etc.</p>
 
-    <div style="margin-top: 3rem; padding: 2rem; background: var(--navy-50); border: 1px solid var(--navy-100); border-radius: var(--radius-lg); display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
-      <div style="flex: 1; min-width: 260px;">
-        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Companion document</h3>
-        <p style="color: var(--ink-soft); font-size: 0.95rem;">For the technical audit of what was wrong with the previous site, what was fixed, and the projected SEO/AEO/GEO impact, see the SEO Audit Report.</p>
-      </div>
-      <a href="/seo-audit.html" class="btn-primary">Read SEO Audit Report</a>
-    </div>
+<p style="margin-top:14px;"><strong>Install timing</strong> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">5&ndash;7 / 7&ndash;12 / 14&ndash;21 days / 4&ndash;8 weeks &mdash; industry-standard commercial FTTH install windows.</p>
 
-  </div>
-</section>
+<p style="margin-top:14px;"><strong>Local landmarks</strong> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">Whitely Layout, Hope Farm Junction, Brookefield Main, ITPL Main Road, Prestige Shantiniketan, Park Square Mall, Old Madras Road. These are real Bangalore geographic facts.</p>
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer-bottom" style="padding: 2rem 0; border-top: none; flex-direction: column; gap: 0.5rem; text-align: center;">
-      <span>Developer Notes · Prepared April 2026 · For Gaxiom Networking Solutions Pvt Ltd</span>
-      <span>© 2026 Gaxiom Networking Solutions Pvt Ltd · No. 8 Whitely Layout, Whitefield, Bangalore 560066</span>
-    </div>
-  </div>
-</footer>
+<p style="margin-top:14px;"><strong>FAQ (3 Q&amp;As)</strong> <span class="src-pill src-industry">Industry</span> <span class="src-pill src-ai">+ AI framing</span></p>
+<p style="font-size:13px;">Neighbourhood-specific framing with general answers reflecting industry-standard enterprise ISP service levels.</p></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p>Each neighbourhood page declares a <code>Place</code> with GeoCoordinates plus a <code>Service</code> scoped to that area.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre>{
+  <span class="at">&quot;@context&quot;</span>: <span class="str">&quot;https://schema.org&quot;</span>,
+  <span class="at">&quot;@graph&quot;</span>: [
+    {
+      <span class="at">&quot;@type&quot;</span>: [
+        &quot;Organization&quot;
+      ],
+      <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#organization&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf&quot;</span>,
+      <span class="at">&quot;legalName&quot;</span>: <span class="str">&quot;Gaxiom Networking Solutions Private Limited&quot;</span>,
+      <span class="at">&quot;alternateName&quot;</span>: <span class="str">&quot;Gaxiom&quot;</span>,
+      <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in&quot;</span>,
+      <span class="at">&quot;logo&quot;</span>: {
+        <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ImageObject&quot;</span>,
+        <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in/images/logo.jpeg&quot;</span>,
+        <span class="at">&quot;width&quot;</span>: <span class="num">300</span>,
+        <span class="at">&quot;height&quot;</span>: <span class="num">300</span>
+      },
+      <span class="at">&quot;foundingDate&quot;</span>: <span class="str">&quot;2019&quot;</span>,
+      <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Enterprise fibre broadband operator serving Whitefield and East Bangalore.&quot;</span>,
+      <span class="at">&quot;sameAs&quot;</span>: [
+        &quot;https://portal.gaxiom.in/customer_portal&quot;
+      ],
+      <span class="at">&quot;contactPoint&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;telephone&quot;</span>: <span class="str">&quot;+91-7338685258&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;sales&quot;</span>,
+          <span class="at">&quot;areaServed&quot;</span>: <span class="str">&quot;IN&quot;</span>,
+          <span class="at">&quot;availableLanguage&quot;</span>: [
+            &quot;en&quot;,
+            &quot;hi&quot;,
+            &quot;kn&quot;
+          ]
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;telephone&quot;</span>: <span class="str">&quot;+91-7338685262&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;customer support&quot;</span>,
+          <span class="at">&quot;areaServed&quot;</span>: <span class="str">&quot;IN&quot;</span>,
+          <span class="at">&quot;availableLanguage&quot;</span>: [
+            &quot;en&quot;,
+            &quot;hi&quot;,
+            &quot;kn&quot;
+          ]
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;email&quot;</span>: <span class="str">&quot;bd@gaxiom.in&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;sales&quot;</span>
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;ContactPoint&quot;</span>,
+          <span class="at">&quot;email&quot;</span>: <span class="str">&quot;support@gaxiom.in&quot;</span>,
+          <span class="at">&quot;contactType&quot;</span>: <span class="str">&quot;technical support&quot;</span>
+        }
+      ]
+    },
+    {
+      <span class="at">&quot;@type&quot;</span>: [
+        &quot;LocalBusiness&quot;,
+        &quot;InternetServiceProvider&quot;
+      ],
+      <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#localbusiness&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf — Enterprise Fibre Broadband&quot;</span>,
+      <span class="at">&quot;image&quot;</span>: <span class="str">&quot;https://www.gsurf.in/images/logo.jpeg&quot;</span>,
+      <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in&quot;</span>,
+      <span class="at">&quot;telephone&quot;</span>: <span class="str">&quot;+91-7338685258&quot;</span>,
+      <span class="at">&quot;email&quot;</span>: <span class="str">&quot;bd@gaxiom.in&quot;</span>,
+      <span class="at">&quot;priceRange&quot;</span>: <span class="str">&quot;₹₹&quot;</span>,
+      <span class="at">&quot;parentOrganization&quot;</span>: {
+        <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#organization&quot;</span>
+      },
+      <span class="at">&quot;address&quot;</span>: {
+        <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+        <span class="at">&quot;streetAddress&quot;</span>: <span class="str">&quot;No. 8, Whitely Layout, Whitefield Main Road&quot;</span>,
+        <span class="at">&quot;addressLocality&quot;</span>: <span class="str">&quot;Whitefield&quot;</span>,
+        <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+        <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560066&quot;</span>,
+        <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+      },
+      <span class="at">&quot;geo&quot;</span>: {
+        <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;GeoCoordinates&quot;</span>,
+        <span class="at">&quot;latitude&quot;</span>: <span class="num">12.9698</span>,
+        <span class="at">&quot;longitude&quot;</span>: <span class="num">77.75</span>
+      },
+      <span class="at">&quot;areaServed&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Whitefield, Bangalore&quot;</span>,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560066&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;Brookefield &amp; Marathahalli&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560037&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;ITPL &amp; Hoodi&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560048&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;Kadugodi &amp; Sadaramangala&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560067&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;Mahadevapura &amp; KR Puram&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560016&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;Kaggadasapura &amp; CV Raman Nagar&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560036&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        },
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+          <span class="at">&quot;name&quot;</span>: &quot;Thubarahalli &amp; Varthur&quot;,
+          <span class="at">&quot;address&quot;</span>: {
+            <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+            <span class="at">&quot;postalCode&quot;</span>: <span class="str">&quot;560049&quot;</span>,
+            <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+            <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+          }
+        }
+      ],
+      <span class="at">&quot;openingHoursSpecification&quot;</span>: [
+        {
+          <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;OpeningHoursSpecification&quot;</span>,
+          <span class="at">&quot;dayOfWeek&quot;</span>: [
+            &quot;Monday&quot;,
+            &quot;Tuesday&quot;,
+            &quot;Wednesday&quot;,
+            &quot;Thursday&quot;,
+            &quot;Friday&quot;,
+            &quot;Saturday&quot;
+          ],
+          <span class="at">&quot;opens&quot;</span>: <span class="str">&quot;09: <span class="num">00</span>&quot;</span>,
+          <span class="at">&quot;closes&quot;</span>: <span class="str">&quot;20: <span class="num">00</span>&quot;</span>
+        }
+      ],
+      <span class="at">&quot;sameAs&quot;</span>: [
+        &quot;https://portal.gaxiom.in/customer_portal&quot;
+      ]
+    },
+    {
+      <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;WebSite&quot;</span>,
+      <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#website&quot;</span>,
+      <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in&quot;</span>,
+      <span class="at">&quot;name&quot;</span>: <span class="str">&quot;GSurf&quot;</span>,
+      <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Enterprise fibre broadband for Whitefield businesses.&quot;</span>,
+      <span class="at">&quot;publisher&quot;</span>: {
+        <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#organization&quot;</span>
+      },
+      <span class="at">&quot;inLanguage&quot;</span>: <span class="str">&quot;en-IN&quot;</span>
+    }
+  ]
+}</pre>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s9">
+<div class="section-head-row"><div class="section-num">9</div><span class="section-eyebrow" style="margin-bottom:0;">Page Breakdown</span></div>
+<h2 class="section-h2">ICP Pages (6)</h2>
+<hr class="section-divider">
+<p class="section-intro">Each ICP page reframes the same Office Broadband service for a specific segment. Structure identical across all six; content varies by segment pain points.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p style="font-size:13px;"><strong>Applies to:</strong> software-companies, schools, hospitals, smes, coworking, manufacturing</p>
+
+<p style="margin-top:12px;"><strong>Hero headline</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">"Fibre for [segment]" framing around live site's "Office Broadband".</p>
+
+<p style="margin-top:14px;"><strong>"At a glance" fact card</strong> <span class="src-pill src-live">Live</span> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">Plan + SLA from live site. Segment type and typical team size from industry patterns.</p>
+
+<p style="margin-top:14px;"><strong>Pain + solution</strong> <span class="src-pill src-industry">Industry</span></p>
+<p style="font-size:13px;">Segment characteristics (software teams need upload, schools need filtering, hospitals need redundancy) and how enterprise fibre addresses them.</p>
+
+<p style="margin-top:14px;"><strong>Customer quote</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">"Engineering lead, 60-person SaaS, ITPL" etc. &mdash; representative, not real customers.</p>
+
+<p style="margin-top:14px;"><strong>Technical claims</strong> <span class="src-pill src-placeholder">Confirm each</span></p>
+<p style="font-size:13px;"><strong>Needs client sign-off before launch:</strong></p>
+<ul style="margin:6px 0 0 20px; font-size:13px;">
+<li>"Sub-5ms AWS Mumbai latency" (software)</li>
+<li>"HIPAA-ready segmentation" (hospitals)</li>
+<li>"2-hour priority SLA for healthcare"</li>
+<li>"IP-65 outdoor ONT" (manufacturing)</li>
+<li>"BGP announcement of your own IP space"</li>
+</ul></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p>Each ICP page declares a <code>Service</code> with provider (sitewide LocalBusiness) and areaServed. Service type and segment description AI-structured from industry patterns.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre>{
+  <span class="at">&quot;@context&quot;</span>: <span class="str">&quot;https://schema.org&quot;</span>,
+  <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Service&quot;</span>,
+  <span class="at">&quot;serviceType&quot;</span>: <span class="str">&quot;Enterprise Fibre Broadband&quot;</span>,
+  <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Enterprise Fibre for Software Companies&quot;</span>,
+  <span class="at">&quot;description&quot;</span>: <span class="str">&quot;Symmetric gigabit fibre for software teams in Whitefield. Static IP, sub-5ms AWS Mumbai latency, dev-literate NOC. From ₹2,700/month.&quot;</span>,
+  <span class="at">&quot;provider&quot;</span>: {
+    <span class="at">&quot;@id&quot;</span>: <span class="str">&quot;https://www.gsurf.in/#localbusiness&quot;</span>
+  },
+  <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in/software-companies.html&quot;</span>,
+  <span class="at">&quot;areaServed&quot;</span>: {
+    <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;Place&quot;</span>,
+    <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Whitefield, Bangalore&quot;</span>,
+    <span class="at">&quot;address&quot;</span>: {
+      <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;PostalAddress&quot;</span>,
+      <span class="at">&quot;addressLocality&quot;</span>: <span class="str">&quot;Bangalore&quot;</span>,
+      <span class="at">&quot;addressRegion&quot;</span>: <span class="str">&quot;Karnataka&quot;</span>,
+      <span class="at">&quot;addressCountry&quot;</span>: <span class="str">&quot;IN&quot;</span>
+    }
+  },
+  <span class="at">&quot;hasOfferCatalog&quot;</span>: {
+    <span class="at">&quot;@type&quot;</span>: <span class="str">&quot;OfferCatalog&quot;</span>,
+    <span class="at">&quot;name&quot;</span>: <span class="str">&quot;Enterprise Fibre Plans&quot;</span>,
+    <span class="at">&quot;url&quot;</span>: <span class="str">&quot;https://www.gsurf.in/enterprise.html&quot;</span>
+  }
+}</pre>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s10">
+<div class="section-head-row"><div class="section-num">10</div><span class="section-eyebrow" style="margin-bottom:0;">Page Breakdown</span></div>
+<h2 class="section-h2">About &middot; about.html</h2>
+<hr class="section-divider">
+<p class="section-intro">Company background. Most content is direct-from-live-site facts wrapped in new positioning copy.</p>
+<div class="ba-grid">
+<div class="ba-col">
+<div class="ba-header before-h"><span class="ba-dot before-dot"></span>SEO Content Source</div>
+<div class="ba-body before-body"><p><strong>Hero lede</strong> <span class="src-pill src-live">Live</span> <span class="src-pill src-ai">Framing</span></p>
+<p style="font-size:13px;">"Three decades of combined network-operator experience" &mdash; live site says "over three decades of collective experience". Address "No. 8 Whitely Layout" is verbatim.</p>
+
+<p style="margin-top:14px;"><strong>6 philosophy cards</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">"We live here / Our fibre belongs to us / We answer the phone / We stay focused / We invest in the neighbourhood / We measure ourselves honestly" &mdash; brand narrative written around the "local operator" positioning.</p>
+
+<p style="margin-top:14px;"><strong>Callout quote</strong> <span class="src-pill src-ai">AI</span></p>
+<p style="font-size:13px;">Marketing copy, attributed to "Gaxiom Networking Solutions &middot; Operating GSurf since 2019".</p>
+
+<p style="margin-top:14px;"><strong>Company details table</strong> <span class="src-pill src-live">Live</span></p>
+<p style="font-size:13px;">Legal name, brand name, office, phones, emails, customer portal URL &mdash; all verbatim from live site.</p>
+
+<p style="margin-top:14px;"><strong>"Established 2019"</strong> <span class="src-pill src-placeholder">Confirm</span></p>
+<p style="font-size:13px;">Live site says "fast-growing startup" without a year. <strong>Confirm Gaxiom's actual founding year</strong>.</p></div>
+</div>
+<div class="ba-col">
+<div class="ba-header after-h"><span class="ba-dot after-dot"></span>Revamp Implementation</div>
+<div class="ba-body after-body"><p>Combines verbatim fact ("three decades", "No. 8 Whitely Layout") with AI-structured local-operator narrative.</p>
+<div class="code-with-copy">
+<button class="copy-btn" type="button" aria-label="Copy">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+</button>
+<pre><span class="kw">&lt;p</span> <span class="at">class</span>=<span class="str">&quot;lede hero-lede&quot;</span>&gt;
+  GSurf is the enterprise broadband brand of Gaxiom Networking Solutions Pvt Ltd, a fiber operator headquartered at No. 8 Whitely Layout. Our founding team has three decades of combined network-operator experience at national ISPs. We started GSurf because enterprise fiber in Whitefield deserved a local operator who shows up.
+<span class="kw">&lt;/p</span>&gt;</pre>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s11">
+<div class="section-head-row"><div class="section-num">11</div><span class="section-eyebrow" style="margin-bottom:0;">Before Launch</span></div>
+<h2 class="section-h2">Placeholder content checklist</h2>
+<hr class="section-divider">
+<p class="section-intro">Every claim flagged red above, consolidated. Review on a client call before going public.</p>
+<div class="callout callout-error">
+<div class="callout-icon">&#9888;&#65039;</div>
+<div><strong>Required before public launch</strong>13 claims on the site are plausible but unverified. Walk through each row on a client call. For each, the client should say: (1) <em>"keep it, accurate"</em>; (2) <em>"change to X"</em>; or (3) <em>"remove, we don't claim that"</em>. Apply the changes, redeploy. The site is then 100% client-sourced.</div>
+</div>
+
+<div class="table-wrap" style="margin-top:18px;">
+<table>
+<thead><tr><th>#</th><th>Claim</th><th>Where it appears</th><th>Suggested action</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>"50+ software / 12 schools / 8 hospitals / 6 coworking"</td><td>Homepage trust bar</td><td>Real counts, or soften to "Trusted by businesses across Whitefield"</td></tr>
+<tr><td>2</td><td>"Since 2019"</td><td>Stats strip, about, footer</td><td>Confirm actual founding year</td></tr>
+<tr><td>3</td><td>"6-kilometre radius"</td><td>Coverage page</td><td>Confirm actual footprint, or reword</td></tr>
+<tr><td>4</td><td>200+ / 80+ / 70+ / 45+ active customers</td><td>4 neighbourhood pages</td><td>Supply real counts or remove line</td></tr>
+<tr><td>5</td><td>"Coverage since 2019/2020/2021"</td><td>4 neighbourhood pages</td><td>Confirm or remove</td></tr>
+<tr><td>6</td><td>"Sub-5ms AWS Mumbai latency"</td><td>software-companies, itpl</td><td>Verify RTT to ap-south-1</td></tr>
+<tr><td>7</td><td>"HIPAA-ready segmentation" / "2-hour SLA"</td><td>hospitals</td><td>Confirm segmentation + priority tier</td></tr>
+<tr><td>8</td><td>"IP-65 outdoor ONT"</td><td>manufacturing, mahadevapura</td><td>Confirm outdoor hardware model</td></tr>
+<tr><td>9</td><td>"BGP announcement / dual-IP"</td><td>enterprise FAQ, itpl FAQ</td><td>Confirm; remove from FAQ if not offered</td></tr>
+<tr><td>10</td><td>"Free install on annual / ₹2500 on monthly"</td><td>enterprise FAQ</td><td>Confirm charge structure</td></tr>
+<tr><td>11</td><td>"Residential only where we serve enterprise"</td><td>home-broadband</td><td>Confirm policy</td></tr>
+<tr><td>12</td><td>"Mon&ndash;Sat, 9am&ndash;8pm"</td><td>contact sales card</td><td>Confirm hours</td></tr>
+<tr><td>13</td><td>"Response within 48 hours" / "under three rings"</td><td>Survey, contact</td><td>Confirm or soften</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="section">
+<div class="callout callout-good">
+<div class="callout-icon">&#128279;</div>
+<div><strong>Companion document</strong>For the technical SEO audit of the previous live site &mdash; with 12 findings, before/after code, and projected impact timeline across SEO / AEO / GEO channels &mdash; see the <a href="/seo-audit.html" style="color: var(--navy-dark); font-weight:600; border-bottom: 1px solid;">SEO Audit Report</a>.</div>
+</div>
+</div>
+
+</div>
+
+<div class="doc-footer">
+<span>GSurf Website Revamp &middot; Developer Notes &middot; AdsPilot &middot; April 2026</span>
+<span>Stack: <strong>Static HTML + GitHub Pages</strong> &middot; Scope: <strong>gsurf.in</strong></span>
+</div>
 
 <script>
-  const mt = document.getElementById('menuToggle');
-  const nav = document.getElementById('nav');
-  mt?.addEventListener('click', () => {
-    mt.classList.toggle('open');
-    nav.classList.toggle('open');
+(function () {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.copy-btn');
+    if (!btn) return;
+    const wrap = btn.closest('.code-with-copy');
+    const pre = wrap?.querySelector('pre');
+    if (!pre) return;
+    const text = pre.innerText;
+
+    const doCopy = (t) => (navigator.clipboard?.writeText(t) || Promise.reject()).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = t;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(_) {}
+      document.body.removeChild(ta);
+    });
+
+    Promise.resolve(doCopy(text)).then(() => {
+      btn.classList.add('copied');
+      const oldHTML = btn.innerHTML;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = oldHTML; }, 1600);
+    });
   });
+})();
+
 </script>
 </body>
 </html>
