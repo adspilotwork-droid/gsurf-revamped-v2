@@ -1219,6 +1219,34 @@ a.feature .feature-link-cta {
 }
 .footer-bottom a:hover { color: #fff; }
 
+/* Proposal documentation links — discoverable but de-emphasized */
+.proposal-docs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+.proposal-docs-label {
+  color: var(--navy-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.proposal-docs a {
+  color: var(--navy-100);
+  border-bottom: 1px solid transparent;
+  transition: all 0.15s;
+  padding-bottom: 1px;
+}
+.proposal-docs a:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+.proposal-docs-sep {
+  color: var(--navy-400);
+  opacity: 0.5;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 960px) {
   .utility-row > span:not(:first-child):not(:last-child) { display: none; }
