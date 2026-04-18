@@ -901,7 +901,7 @@
       </div>
     </div>
 
-    <form class="survey-form">
+    <form class="survey-form" onsubmit="event.preventDefault(); if (!window.__gsurfFormReady) { alert('Form is still loading. Please try again in a moment.'); }">
       <div class="form-title">Site Survey Request</div>
       <div class="form-row">
         <div class="form-field">

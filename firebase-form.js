@@ -14,43 +14,30 @@
    [ ] Domain www.gsurf.in added to Authorized domains
    ========================================================================== */
 
-import { initializeApp }
-  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp }
-  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { getAnalytics, isSupported }
-  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js';
-
 /* -------------------------------------------------------------
    FIREBASE CONFIG — gsurf-database project
    Note: This config is not secret. The apiKey is designed to be
    visible in frontend code. Security is enforced by Firestore rules
    (see firestore.rules). See: https://firebase.google.com/docs/projects/api-keys
    ------------------------------------------------------------- */
-
 const firebaseConfig = {
-  apiKey: "AIzaSyB9A-Dcl8aQOgFvwr_-WGKkPyppQdATHjM",
-  authDomain: "gsurf-database.firebaseapp.com",
-  projectId: "gsurf-database",
-  storageBucket: "gsurf-database.firebasestorage.app",
+  apiKey:            "AIzaSyB9A-Dcl8aQOgFvwr_-WGKkPyppQdATHjM",
+  authDomain:        "gsurf-database.firebaseapp.com",
+  projectId:         "gsurf-database",
+  storageBucket:     "gsurf-database.firebasestorage.app",
   messagingSenderId: "327752358612",
-  appId: "1:327752358612:web:79244f3e56f83012067941",
-  measurementId: "G-S45YZWPJLE"
+  appId:             "1:327752358612:web:79244f3e56f83012067941",
+  measurementId:     "G-S45YZWPJLE"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
-
-// Analytics is optional — only loads if environment supports it
-isSupported().then(ok => { if (ok) getAnalytics(app); });
-
 /* -------------------------------------------------------------
-   FORM HANDLER — runs on every page that has .survey-form
+   STEP 1: Attach the form handler IMMEDIATELY (synchronously).
+   This runs before any Firebase imports, so even if the CDN is
+   blocked or slow, the form still captures the submit event and
+   shows SOMETHING to the user instead of silently reloading.
    ------------------------------------------------------------- */
+let firebaseReady = null; // Promise, resolved once SDK + db are ready
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.survey-form');
   if (!form) return;
@@ -58,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = form.querySelector('.submit-btn');
   const originalBtnText = submitBtn?.textContent ?? 'Request Site Survey';
 
-  // Remove the inline onsubmit handler from index.html/other pages
-  form.onsubmit = null;
+  // Mark form as "JS-ready". The inline onsubmit handler in the HTML checks
+  // this flag and only shows the "still loading" alert if we haven't got here yet.
+  window.__gsurfFormReady = true;
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault();   // ← CRITICAL: stops the page-reload default
 
-    // Collect form data
     const fd = new FormData(form);
     const data = {
       name:     (fd.get('name')    || '').trim(),
@@ -78,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
       notes:    (fd.get('notes')   || '').trim(),
     };
 
-    // Lightweight client-side validation
+    // Client-side validation
     if (!data.name || !data.phone || !data.email || !data.address || !data.pincode) {
       showMessage(form, 'Please complete all required fields marked with *.', 'error');
       return;
@@ -92,33 +79,41 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Metadata (not user-editable, server-side context)
-    const submission = {
-      ...data,
-      submittedAt: serverTimestamp(),
-      source: {
-        page:       window.location.pathname,
-        referrer:   document.referrer || null,
-        userAgent:  navigator.userAgent,
-      },
-      status: 'new',
-    };
-
-    // Lock the button during submission
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
 
     try {
-      await addDoc(collection(db, 'site_surveys'), submission);
+      // Wait for Firebase SDK to be ready (with 10s timeout so we never hang)
+      const fb = await Promise.race([
+        firebaseReady,
+        new Promise((_, reject) => setTimeout(
+          () => reject(new Error('Firebase SDK took too long to load')), 10000
+        ))
+      ]);
+
+      if (!fb) throw new Error('Firebase SDK failed to initialise');
+
+      const submission = {
+        ...data,
+        submittedAt: fb.serverTimestamp(),
+        source: {
+          page:      window.location.pathname,
+          referrer:  document.referrer || null,
+          userAgent: navigator.userAgent,
+        },
+        status: 'new',
+      };
+
+      await fb.addDoc(fb.collection(fb.db, 'site_surveys'), submission);
       showThankYou(form, data.name);
+
     } catch (err) {
-      console.error('Firestore write failed:', err);
+      console.error('[GSurf form] Submission failed:', err);
       showMessage(
         form,
-        'Something went wrong. Please try again, or call us directly on +91 73386 85258.',
+        'Something went wrong. Please try again in a moment, or call us directly on +91 73386 85258.',
         'error'
       );
-    } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = originalBtnText;
     }
@@ -126,9 +121,37 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* -------------------------------------------------------------
+   STEP 2: Load and initialise Firebase asynchronously.
+   If this fails, the form handler above still catches the submit,
+   validates, and shows the error banner — it never silently reloads.
+   ------------------------------------------------------------- */
+firebaseReady = (async () => {
+  try {
+    const [
+      { initializeApp },
+      { getFirestore, collection, addDoc, serverTimestamp },
+      { getAnalytics, isSupported },
+    ] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js'),
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js'),
+    ]);
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Analytics — only if supported in the current environment
+    isSupported().then(ok => { if (ok) getAnalytics(app); }).catch(() => {});
+
+    return { db, collection, addDoc, serverTimestamp };
+  } catch (err) {
+    console.error('[GSurf form] Firebase init failed:', err);
+    return null;
+  }
+})();
+
+/* -------------------------------------------------------------
    On success — replace the whole form with a thank-you card.
-   This is clearer than a banner, prevents accidental re-submit,
-   and avoids weird scroll behaviour.
    ------------------------------------------------------------- */
 function showThankYou(form, fullName) {
   const firstName = (fullName || '').trim().split(/\s+/)[0] || 'there';
@@ -160,10 +183,7 @@ function showThankYou(form, fullName) {
     </div>
   `;
 
-  // Swap form for thank-you card, preserving layout
   form.replaceWith(card);
-
-  // Gently bring the card into view without flinging the scroll
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -185,3 +205,4 @@ function showMessage(form, text, type) {
   banner.textContent = text;
   banner.dataset.type = type;
 }
+
