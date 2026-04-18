@@ -27,15 +27,20 @@ import { getAnalytics, isSupported }
    visible in frontend code. Security is enforced by Firestore rules
    (see firestore.rules). See: https://firebase.google.com/docs/projects/api-keys
    ------------------------------------------------------------- */
+
 const firebaseConfig = {
-  apiKey:            "AIzaSyB9A-Dcl8aQOgFvwr_-WGKkPyppQdATHjM",
-  authDomain:        "gsurf-database.firebaseapp.com",
-  projectId:         "gsurf-database",
-  storageBucket:     "gsurf-database.firebasestorage.app",
+  apiKey: "AIzaSyB9A-Dcl8aQOgFvwr_-WGKkPyppQdATHjM",
+  authDomain: "gsurf-database.firebaseapp.com",
+  projectId: "gsurf-database",
+  storageBucket: "gsurf-database.firebasestorage.app",
   messagingSenderId: "327752358612",
-  appId:             "1:327752358612:web:79244f3e56f83012067941",
-  measurementId:     "G-S45YZWPJLE"
+  appId: "1:327752358612:web:79244f3e56f83012067941",
+  measurementId: "G-S45YZWPJLE"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
