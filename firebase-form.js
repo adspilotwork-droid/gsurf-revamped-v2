@@ -105,12 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       await addDoc(collection(db, 'site_surveys'), submission);
-      form.reset();
-      showMessage(
-        form,
-        `Thanks ${data.name.split(' ')[0]} — we've received your request and will be in touch within 48 hours.`,
-        'success'
-      );
+      showThankYou(form, data.name);
     } catch (err) {
       console.error('Firestore write failed:', err);
       showMessage(
@@ -126,7 +121,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* -------------------------------------------------------------
-   Simple message banner above the submit button
+   On success — replace the whole form with a thank-you card.
+   This is clearer than a banner, prevents accidental re-submit,
+   and avoids weird scroll behaviour.
+   ------------------------------------------------------------- */
+function showThankYou(form, fullName) {
+  const firstName = (fullName || '').trim().split(/\s+/)[0] || 'there';
+
+  const card = document.createElement('div');
+  card.className = 'survey-form survey-thankyou';
+  card.setAttribute('role', 'status');
+  card.setAttribute('aria-live', 'polite');
+  card.innerHTML = `
+    <div class="thankyou-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <div class="form-title">Request received</div>
+    <h3 class="thankyou-title">Thanks, ${escapeHtml(firstName)}. We've got your request.</h3>
+    <p class="thankyou-body">
+      A GSurf representative will reach out within <strong>48 hours</strong> to confirm serviceability
+      at your address, recommend a plan, and schedule a site survey.
+    </p>
+    <p class="thankyou-body">
+      In the meantime, if you need to reach us directly, sales is on
+      <a href="tel:+917338685258">+91 73386 85258</a> (Mon&ndash;Sat, 9am&ndash;8pm)
+      or <a href="mailto:bd@gaxiom.in">bd@gaxiom.in</a>.
+    </p>
+    <div class="thankyou-meta">
+      <span>Reference: ${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 7).toUpperCase()}</span>
+    </div>
+  `;
+
+  // Swap form for thank-you card, preserving layout
+  form.replaceWith(card);
+
+  // Gently bring the card into view without flinging the scroll
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* -------------------------------------------------------------
+   Error banner (used only on failure).
    ------------------------------------------------------------- */
 function showMessage(form, text, type) {
   let banner = form.querySelector('.form-banner');
@@ -136,11 +178,5 @@ function showMessage(form, text, type) {
     form.querySelector('.submit-btn').insertAdjacentElement('beforebegin', banner);
   }
   banner.textContent = text;
-  banner.dataset.type = type;   // styled via CSS [data-type="success"|"error"]
-
-  if (type === 'success') {
-    // Scroll form into view so user sees the confirmation
-    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => { banner?.remove(); }, 12000);
-  }
+  banner.dataset.type = type;
 }
