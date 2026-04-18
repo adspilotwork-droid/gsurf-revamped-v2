@@ -1,0 +1,80 @@
+rules_version = '2';
+
+/* ==============================================================
+   GSurf — Firestore Security Rules for site_surveys collection
+   ==============================================================
+
+   WHAT THIS DOES
+   - Anyone can CREATE a new survey document (public website form)
+   - Nobody can READ, UPDATE, or DELETE from the client
+     (you view/export via Firebase Console or authenticated admin app)
+   - Every incoming document must pass strict validation:
+       * Required fields must be present and non-empty
+       * Field types must match
+       * Lengths are capped to prevent abuse
+       * Pincode must be 6 digits
+       * Email must look like an email
+       * Malicious oversized submissions are rejected
+
+   HOW TO DEPLOY
+   1. Copy this entire file contents
+   2. Firebase Console → Firestore Database → Rules tab
+   3. Paste and click "Publish"
+
+   ============================================================== */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /site_surveys/{docId} {
+
+      // Public may CREATE new submissions, subject to validation below.
+      // All other operations (read/update/delete) are denied to unauthenticated users.
+      allow create: if isValidSubmission(request.resource.data);
+      allow read, update, delete: if false;
+    }
+
+    // All other collections: deny by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------
+   Validation — ensures only well-formed submissions are persisted
+   ------------------------------------------------------------------- */
+function isValidSubmission(d) {
+  // Required string fields, non-empty, within length limits
+  return d.keys().hasAll(['name','phone','email','address','pincode','submittedAt','status','source'])
+
+      // ---- Required fields ----
+      && d.name    is string && d.name.size()    >= 2   && d.name.size()    <= 120
+      && d.phone   is string && d.phone.size()   >= 7   && d.phone.size()   <= 25
+      && d.email   is string && d.email.size()   >= 5   && d.email.size()   <= 120
+         && d.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+      && d.address is string && d.address.size() >= 5   && d.address.size() <= 400
+      && d.pincode is string && d.pincode.matches('^[0-9]{6}$')
+
+      // ---- Optional string fields (must be strings if present, can be empty) ----
+      && d.get('company',  '') is string && d.get('company',  '').size() <= 120
+      && d.get('segment',  '') is string && d.get('segment',  '').size() <= 60
+      && d.get('teamSize', '') is string && d.get('teamSize', '').size() <= 30
+      && d.get('notes',    '') is string && d.get('notes',    '').size() <= 2000
+
+      // ---- System-set fields ----
+      && d.status == 'new'
+      && d.submittedAt == request.time
+
+      // ---- Source metadata (must be a map) ----
+      && d.source is map
+      && d.source.keys().hasAny(['page'])
+      && d.source.get('page', '') is string && d.source.get('page', '').size() <= 200
+      && d.source.get('userAgent', '') is string && d.source.get('userAgent', '').size() <= 500
+
+      // ---- No extra fields (prevents schema pollution) ----
+      && d.keys().hasOnly([
+           'name','company','phone','email','address','pincode',
+           'segment','teamSize','notes','submittedAt','status','source'
+         ]);
+}

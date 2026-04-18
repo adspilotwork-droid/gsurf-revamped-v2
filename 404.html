@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found — GSurf</title>
+<meta name="description" content="The page you requested could not be found. Return to the GSurf homepage or browse enterprise fibre broadband plans.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#123d7a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .not-found {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    padding: clamp(3rem, 8vw, 6rem) 0;
+    background: linear-gradient(180deg, var(--navy-50) 0%, var(--surface) 100%);
+  }
+  .not-found-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(4rem, 14vw, 10rem);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--navy-700);
+    letter-spacing: -0.04em;
+    margin-bottom: 1.5rem;
+  }
+  .not-found h1 {
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    margin-bottom: 1rem;
+  }
+  .not-found p { max-width: 520px; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.65; margin-bottom: 2rem; }
+  .not-found-links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+</style>
+</head>
+<body>
+
+<!-- UTILITY STRIP -->
+<div class="utility">
+  <div class="container utility-row">
+    <span><span class="pulse"></span> Network operational · Whitefield, Brookefield, ITPL, Kadugodi, Mahadevapura</span>
+    <span>Sales: <a href="tel:+917338685258">+91 73386 85258</a></span>
+    <span><a href="https://portal.gaxiom.in/customer_portal" target="_blank" rel="noopener">Customer Portal →</a></span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="container header-row">
+    <a href="/" class="wordmark">
+      <span class="wordmark-logo">G</span>
+      GSurf
+    </a>
+    <nav class="primary-nav" id="nav">
+      <a href="/enterprise.html">Enterprise</a>
+      <a href="/coverage.html">Coverage</a>
+      <a href="/home-broadband.html">Residential</a>
+      <a href="/about.html">About</a>
+      <a href="/contact.html" class="cta-pill">Book Site Survey</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- 404 BODY -->
+<section class="not-found">
+  <div class="container">
+    <div class="not-found-code">404</div>
+    <span class="eyebrow">Page not found</span>
+    <h1>This page isn't in our fibre map.</h1>
+    <p>The URL you followed doesn't match any page on the GSurf site. It may have been moved, renamed, or the link may contain a typo. Try one of the paths below, or search by pincode on the coverage page.</p>
+    <div class="not-found-links">
+      <a href="/" class="btn-primary">Return to homepage</a>
+      <a href="/enterprise.html" class="btn-secondary">See enterprise plans</a>
+      <a href="/coverage.html" class="btn-secondary">Check coverage</a>
+      <a href="/contact.html" class="btn-secondary">Book a site survey</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER (shortened for 404) -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="padding: 1.5rem 0; border-top: none;">
+      <span>© 2026 Gaxiom Networking Solutions Pvt Ltd</span>
+      <span>No. 8 Whitely Layout, Whitefield, Bangalore 560066</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const mt = document.getElementById('menuToggle');
+  const nav = document.getElementById('nav');
+  mt?.addEventListener('click', () => {
+    mt.classList.toggle('open');
+    nav.classList.toggle('open');
+  });
+</script>
+</body>
+</html>
